@@ -1,0 +1,4 @@
+all:
+  hosts:
+      host.containers.internal:
+

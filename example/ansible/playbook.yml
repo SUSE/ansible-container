@@ -1,0 +1,24 @@
+---
+- hosts: all
+  tasks:
+    - name: site | hello world
+      shell: echo "Hi! Ansible is working"
+
+#    - name: Gather the package facts
+#      ansible.builtin.package_facts:
+#        manager: auto
+
+#    - name: Print the package facts
+#      ansible.builtin.debug:
+#        var: ansible_facts.packages
+
+    - name: Ensure NetworkManager is installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - NetworkManager
+
+    - name: Deactivate Wireless Network Interfaces
+      command: nmcli radio wifi off
+#      when: "'NetworkManager' in ansible_facts.packages"
