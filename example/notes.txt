@@ -1,11 +1,11 @@
-transactional-update pkg install scout-command-not-found podman systemd-experimental systemd-portable python310-rpm git
+transactional-update pkg install scout-command-not-found podman systemd-experimental systemd-portable python310-rpm
 
 podman build . -t ansible
 
 
-podman run  -it -v ~/ansible-container/example/ansible:/work:ro -v ~ec2-user/.ansible/roles:/root/.ansible/roles -v ~ec2-user/.ssh:/root/.ssh --rm  ansible ansible-playbook -i /work/inventory/inventory.yaml  /work/playbook.yml
+podman run  -it -v ${PWD}:/work -v ~/.ansible/roles:/root/.ansible/roles -v ~/.ssh:/root/.ssh --rm  ansible ansible-playbook -i /work/inventory/inventory.yaml  /work/playbook.yml
 
-podman run  -it -v ~/ansible-container/example/ansible:/work:ro -v ~ec2-user/.ansible/roles:/root/.ansible/roles -v ~ec2-user/.ssh:/root/.ssh --rm  ansible
+podman run  -it -v ${PWD}:/work -v ~/.ansible/roles:/root/.ansible/roles -v ~/.ssh:/root/.ssh --rm  ansible
 
 
 in /etc/selinux/config

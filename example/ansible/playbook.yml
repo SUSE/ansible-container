@@ -12,12 +12,12 @@
 #      ansible.builtin.debug:
 #        var: ansible_facts.packages
 
-    - name: Ensure NetworkManager is installed
-      ansible.builtin.package:
-        name: "{{ item }}"
-        state: present
-      with_items:
-        - NetworkManager
+#    - name: Ensure NetworkManager is installed
+#      ansible.builtin.package:
+#        name: "{{ item }}"
+#        state: present
+#      with_items:
+#        - NetworkManager
 
     - name: Deactivate Wireless Network Interfaces
       command: nmcli radio wifi off

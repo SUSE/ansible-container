@@ -1,0 +1,42 @@
+#!/bin/sh
+create_command_bin() {
+SCRIPT=$1
+if [ -d /host/usr/local/bin ]; then
+        TARGET=/host/usr/local/bin
+elif [ -d /host/bin ] ; then
+        TARGET=/host/bin
+else
+        echo "could not determine copy target"
+        exit 1
+fi
+
+if [ ! -e ${TARGET}/${SCRIPT} ]; then
+    echo "#!/bin/sh 
+    podman run  -it -v \${PWD}:/work -v ~/.ansible.cfg:/root/.ansible.cfg -v ~/.ansible/roles:/root/.ansible/roles -v ~/.ssh:/root/.ssh --rm ansible ${SCRIPT} \$@" > ${TARGET}/${SCRIPT} 
+    chmod +x ${TARGET}/${SCRIPT}
+else
+        echo "${TARGET}/${SCRIPT} already exist, will not update it"
+fi
+}
+
+if [ ! -e ${TARGET}/${SCRIPT} ]; then
+        echo "Failed to create ${TARGET}/${SCRIPT}"
+        exit 1
+fi
+
+COMMANDS="ansible \
+ansible-config \
+ansible-console \
+ansible-galaxy \
+ansible-playbook \
+ansible-vault \
+ansible-community \
+ansible-connection \
+ansible-doc \
+ansible-inventory \
+ansible-pull"
+
+for COMMAND in ${COMMANDS}; do
+    create_command_bin ${COMMAND}
+done
+
