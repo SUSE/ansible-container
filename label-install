@@ -11,8 +11,11 @@ else
 fi
 
 if [ ! -e ${TARGET}/${SCRIPT} ]; then
-    echo "#!/bin/sh 
-    podman run  -it -v \${PWD}:/work -v ~/.ansible.cfg:/root/.ansible.cfg -v ~/.ansible/root/.ansible -v ~/.ssh:/root/.ssh --hostuser=$(whoami)   -u=$(getent passwd $(whoami) | awk -F: '{print $3 }') --userns=keep-id --rm ansible ${SCRIPT} \$@" > ${TARGET}/${SCRIPT}
+    echo "#! /bin/sh
+HOME=\${HOME}
+ME=\$(whoami)
+GID=\$(getent passwd \$(whoami) | awk -F: '{print \$4 }')
+podman run  -it -v \${PWD}:/work -v \${HOME}:\${HOME} --userns=keep-id:uid=\${UID},gid=\${GID}  --hostuser=\${ME}   --rm ansible ${SCRIPT} \$@" > ${TARGET}/${SCRIPT}
     chmod +x ${TARGET}/${SCRIPT}
 else
         echo "${TARGET}/${SCRIPT} already exist, will not update it"
