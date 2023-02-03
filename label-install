@@ -12,10 +12,7 @@ fi
 
 if [ ! -e ${TARGET}/${SCRIPT} ]; then
     echo "#! /bin/sh
-HOME=\${HOME}
-ME=\$(whoami)
-GID=\$(getent passwd \$(whoami) | awk -F: '{print \$4 }')
-podman run  -it -v \${PWD}:/work -v \${HOME}:\${HOME} --userns=keep-id:uid=\${UID},gid=\${GID}  --hostuser=\${ME}   --rm ansible ${SCRIPT} \$@" > ${TARGET}/${SCRIPT}
+podman run  -it -v \${PWD}:/work -v \${HOME}:\${HOME} --userns=keep-id --rm ansible ${SCRIPT} \$@" > ${TARGET}/${SCRIPT}
     chmod +x ${TARGET}/${SCRIPT}
 else
         echo "${TARGET}/${SCRIPT} already exist, will not update it"
