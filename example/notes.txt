@@ -1,4 +1,4 @@
-transactional-update pkg install scout-command-not-found podman systemd-experimental systemd-portable python310-rpm
+transactional-update pkg install podman python310-rpm
 
 podman build . -t ansible
 
