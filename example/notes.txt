@@ -1,4 +1,4 @@
-transactional-update pkg install podman python310-rpm
+sudo transactional-update pkg install podman python310-rpm
 
 podman build . -t ansible
 
@@ -6,7 +6,3 @@ podman build . -t ansible
 podman run  -it -v ${PWD}:/work -v ~/.ansible/roles:/root/.ansible/roles -v ~/.ssh:/root/.ssh --rm  ansible ansible-playbook -i /work/inventory/inventory.yaml  /work/playbook.yml
 
 podman run  -it -v ${PWD}:/work -v ~/.ansible/roles:/root/.ansible/roles -v ~/.ssh:/root/.ssh --rm  ansible
-
-
-in /etc/selinux/config
-SELINUX=permissive
