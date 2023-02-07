@@ -1,19 +1,8 @@
 #!/bin/sh
 create_command_bin() {
 SCRIPT=$1
-if [ -d /host/usr/local/bin ]; then
-        TARGET=/host/usr/local/bin
-elif [ -d /host/bin ] ; then
-        TARGET=/host/bin
-else
-        echo "could not determine copy target"
-        exit 1
-fi
-
 if [ ! -e ${TARGET}/${SCRIPT} ]; then
-    echo "#! /bin/sh
-podman run  --security-opt label=disable -it -v \${PWD}:/work -v \${HOME}:\${HOME} --userns=keep-id --rm ansible ${SCRIPT} \$@" > ${TARGET}/${SCRIPT}
-    chmod +x ${TARGET}/${SCRIPT}
+        cd ${TARGET}; ln -s ansible-wrapper.sh ${SCRIPT}
 else
         echo "${TARGET}/${SCRIPT} already exist, will not update it"
 fi
@@ -24,6 +13,7 @@ if [ ! -e ${TARGET}/${SCRIPT} ]; then
         exit 1
 fi
 
+# Commands to create
 COMMANDS="ansible \
 ansible-config \
 ansible-console \
@@ -35,6 +25,19 @@ ansible-connection \
 ansible-doc \
 ansible-inventory \
 ansible-pull"
+
+# determime target directory
+# either /usrlocalbin or current user bin
+if [ -d /host/usr/local/bin ]; then
+        TARGET=/host/usr/local/bin
+elif [ -d /host/bin ] ; then
+        TARGET=/host/bin
+else
+        echo "could not determine copy target"
+        exit 1
+fi
+
+cp /container/ansible-wrapper.sh ${TARGET}/ansible-wrapper.sh
 
 for COMMAND in ${COMMANDS}; do
     create_command_bin ${COMMAND}

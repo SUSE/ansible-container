@@ -1,16 +1,17 @@
 #!/bin/sh
 delete_file() {
 FILE=$1
-if [ -e "/host/bin/${FILE}" ]; then
+if [[ -e "/host/bin/${FILE}" || -L "/host/bin/${FILE}" ]]; then
 	/usr/bin/rm -vf /host/bin/${FILE}
-elif [ -e "/host/usr/local/bin/${FILE}" ]; then
+elif [[ -e "/host/usr/local/bin/${FILE}" || -L "/host/usr/local/bin/${FILE}" ]]; then
         /usr/bin/rm -vf /host/usr/local/bin/${FILE}
 else
 	echo "${FILE} not present, nothing to remove"
 fi
 }
 
-COMMANDS="ansible \
+COMMANDS="ansible-wrapper.sh \
+ansible \
 ansible-config \
 ansible-console \
 ansible-galaxy \

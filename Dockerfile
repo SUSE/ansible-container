@@ -6,6 +6,8 @@ ENV LC_ALL en_US.UTF-8
 RUN mkdir /container
 COPY label-install /container
 COPY label-uninstall /container
+COPY ansible-wrapper.sh /container/ansible-wrapper.sh
+RUN chmod +x  /container/ansible-wrapper.sh
 
 WORKDIR /work
 
