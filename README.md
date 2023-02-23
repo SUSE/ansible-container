@@ -55,7 +55,7 @@ all:
       host.containers.internal:
 ```
 
-The inventory record could also contaon other hosts to be managed.
+The inventory record could also contain other hosts to be managed.
 
 ### SSH keys must be set up ###
 The container must be able to SSH to the system being managed. So, the system must support SSH access and
