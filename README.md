@@ -12,7 +12,7 @@ This container provides the ansible toolstack inside a container.
 
 ## Ansible commands
 The ansible commands are provided as symlinks to ansible-wrapper.sh.
-The commands will instanciate the container and execute the ansible
+The commands will instantiate the container and execute the ansible
 command.
 
 ## To install ansible commands ##
