@@ -39,7 +39,7 @@ command.
  
 ## Uninstall ansible commands  ##
 * as root:
-  * (cd /; podman container runlabel uninstall ansible)
+  * podman container runlabel uninstall ansible
 * as non-root
   * (cd ~; podman container runlabel user-uninstall ansible)
 
