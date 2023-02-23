@@ -32,7 +32,9 @@
       delegate_to: localhost
 
     - name: test webpage access
-      action: uri url=https://www.example.com return_content=yes
+      uri:
+        url: https://www.example.com
+        return_content: yes
       register: webpage
 
     - name: check fail webpage contents
