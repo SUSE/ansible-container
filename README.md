@@ -5,8 +5,8 @@ This container provides the ansible toolstack inside a container.
   * based on OpenSUSE Tumbleweed
   * installs ansible and some additional tools
 ## System Setup ##
-* Make sure needed packages installed on the host
-  * sudo transactional-update pkg install podman python310-rpm
+* The python310-rpm package is required on the container host for ansible to query gather package facts.
+  * sudo transactional-update pkg install python310-rpm
   * system reboot is required after all transactional updates
     * sudo shutdown -r now
 
