@@ -62,7 +62,7 @@ The container must be able to SSH to the system being managed. So, the system mu
 the SSH keys must have been created and the public key must be in the .ssh/authorized_keys file for the
 target user. While the root user can be used so long as the system allows SSH'ing to the root account,
 the preferred method to to use an non-root account that has passwordless sudo rights. Anny operation in ansible
-play books that require system privilege would then to use "become: true"
+play books that require system privilege would then need to use "become: true"
 
 SSH access can ve validated with "$ ssh localhost"
 
