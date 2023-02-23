@@ -24,3 +24,23 @@
       command: nmcli radio wifi off
       become: true
       when: "'NetworkManager' in ansible_facts.packages"
+
+    - name: test ssh
+      ansible.builtin.wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 22
+      delegate_to: localhost
+
+    - name: test webpage access
+      action: uri url=https://www.example.com return_content=yes
+      register: webpage
+
+    - name: check fail webpage contents
+      fail:
+        msg: 'service is not happy'
+      when: "'AWESOME' not in webpage.content"
+
+    - name: check pass webpage contents
+      fail:
+        msg: 'service is not happy'
+      when: "'This domain is for use in illustrative examples in documents' not in webpage.content"

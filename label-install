@@ -24,6 +24,7 @@ ansible-community \
 ansible-connection \
 ansible-doc \
 ansible-inventory \
+ansible-test \
 ansible-pull"
 
 # determime target directory
