@@ -1,4 +1,5 @@
-all:
+alphost_group:
   hosts:
-      host.containers.internal:
+    alphost:
+      ansible_host: host.containers.internal
 
