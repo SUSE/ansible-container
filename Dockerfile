@@ -32,15 +32,21 @@ COPY label-install /container
 COPY label-uninstall /container
 COPY ansible-wrapper.sh /container/ansible-wrapper.sh
 RUN chmod +x  /container/ansible-wrapper.sh
+ADD example /container/example
 
 WORKDIR /work
 
-LABEL ROOT-INSTALL="/usr/bin/podman run --env IMAGE=IMAGE --rm --security-opt label=disable -v /:/host IMAGE /bin/bash /container/label-install"
-LABEL ROOT-UNINSTALL="/usr/bin/podman run --rm --security-opt label=disable -v /:/host IMAGE /bin/bash /container/label-uninstall"
+LABEL INSTALL="/usr/bin/podman run --env IMAGE=IMAGE --rm --security-opt label=disable -v /:/host IMAGE /bin/bash /container/label-install"
+LABEL UNINSTALL="/usr/bin/podman run --rm --security-opt label=disable -v /:/host IMAGE /bin/bash /container/label-uninstall"
 LABEL USER-INSTALL="/usr/bin/podman run --env IMAGE=IMAGE --security-opt label=disable --rm -v \${PWD}/:/host IMAGE /bin/bash /container/label-install"
 LABEL USER-UNINSTALL="/usr/bin/podman run --rm --security-opt label=disable -v \${PWD}/:/host IMAGE /bin/bash /container/label-uninstall"
 
-RUN zypper -v -n in ansible-core ansible openssh-clients; \
-    zypper -v -n in python310-python-libvirt; \
-    zypper clean --all
+RUN zypper -v -n in \
+ansible-core \
+ansible \
+ansible-test \
+openssh-clients \
+git \
+python3-libvirt-python; \
+zypper clean --all
 
