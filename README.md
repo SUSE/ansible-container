@@ -35,6 +35,7 @@ command.
 * ansible-inventory
 * ansible-playbook
 * ansible-pull
+* ansible-test
 * ansible-vault
  
 ## Uninstall ansible commands  ##
