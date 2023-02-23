@@ -59,7 +59,7 @@ The inventory record could also contain other hosts to be managed.
 
 ### SSH keys must be set up ###
 The container must be able to SSH to the system being managed. So, the system must support SSH access and
-the SSH keys must have been created and the public key must be in the .ssh/authorized_keys file for the
+the SSH keys must have been created (using `ssh-keygen`) and the public key must be in the `.ssh/authorized_keys` file for the
 target user. While the root user can be used so long as the system allows SSH'ing to the root account,
 the preferred method to to use an non-root account that has passwordless sudo rights. Anny operation in ansible
 play books that require system privilege would then need to use "become: true"
