@@ -5,8 +5,8 @@ This container provides the ansible toolstack inside a container.
   * based on OpenSUSE Tumbleweed
   * installs ansible and some additional tools
 ## System Setup ##
-* The python310-rpm package is required on the container host for ansible to query gather package facts.
-  * sudo transactional-update pkg install python310-rpm
+* Podman and python3-rpm are needed on the container host. The run label commands are hard coded to use podman and python3-rpm is required on the container host for ansible to gather package facts.
+  * sudo transactional-update pkg install python3-rpm
   * system reboot is required after all transactional updates
     * sudo shutdown -r now
 
@@ -21,7 +21,7 @@ command.
   * for the root user the ansible commands are placed in /usr/local/bin
   * podman container runlabel install ansible
 * as non-root
-  * for non-root users the ansible commands are placed in the user's ~/bin
+  * For non-root users 'podman container runlabel user-install ansible' will place the ansible commands in ${PWD}/bin. The following will install the ansible commands into the current user's bin area (~/bin).
   * (cd ~; podman container runlabel user-install ansible)
 
 ## Ansible Commands ##
@@ -42,6 +42,7 @@ command.
 * as root:
   * podman container runlabel uninstall ansible
 * as non-root
+
   * (cd ~; podman container runlabel user-uninstall ansible)
 
 ## Operation is through SSH back to container host or to other remote systems  ##
