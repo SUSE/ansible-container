@@ -19,7 +19,7 @@ command.
 
 * as root:
   * for the root user the ansible commands are placed in /usr/local/bin
-  * (cd /; podman container runlabel install ansible)
+  * podman container runlabel install ansible
 * as non-root
   * for non-root users the ansible commands are placed in the user's ~/bin
   * (cd ~; podman container runlabel user-install ansible)
