@@ -64,6 +64,6 @@ target user. While the root user can be used so long as the system allows SSH'in
 the preferred method to to use an non-root account that has passwordless sudo rights. Anny operation in ansible
 play books that require system privilege would then need to use "become: true"
 
-SSH access can ve validated with "$ ssh localhost"
+SSH access can be validated with `ssh localhost`.
 
 
