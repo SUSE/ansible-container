@@ -46,6 +46,8 @@ ansible \
 ansible-test \
 openssh-clients \
 git \
-python3-libvirt-python; \
-zypper clean --all
+python3-libvirt-python \
+python3-netaddr \
+;zypper clean --all
+
 
