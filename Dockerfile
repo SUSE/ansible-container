@@ -46,8 +46,8 @@ RUN zypper -v -n in \
         ansible-core \
         ansible \
         ansible-test \
+        git-core \
         openssh-clients \
-        git \
         python3-libvirt-python \
         python3-netaddr \
     ; \
