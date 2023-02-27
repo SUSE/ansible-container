@@ -28,10 +28,12 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
 RUN mkdir /container
-COPY label-install /container
-COPY label-uninstall /container
-COPY ansible-wrapper.sh /container/ansible-wrapper.sh
-RUN chmod +x  /container/ansible-wrapper.sh
+COPY label-install \
+     label-uninstall \
+     ansible-wrapper.sh \
+     hosts_alphost_group \
+     /container
+RUN chmod +x /container/ansible-wrapper.sh
 
 WORKDIR /work
 
@@ -41,13 +43,15 @@ LABEL USER-INSTALL="/usr/bin/podman run --env IMAGE=IMAGE --security-opt label=d
 LABEL USER-UNINSTALL="/usr/bin/podman run --rm --security-opt label=disable -v \${PWD}/:/host IMAGE /bin/bash /container/label-uninstall"
 
 RUN zypper -v -n in \
-ansible-core \
-ansible \
-ansible-test \
-openssh-clients \
-git \
-python3-libvirt-python \
-python3-netaddr \
-;zypper clean --all
+        ansible-core \
+        ansible \
+        ansible-test \
+        openssh-clients \
+        git \
+        python3-libvirt-python \
+        python3-netaddr \
+    ; \
+    zypper clean --all
 
+RUN cat /container/hosts_alphost_group >> /etc/ansible/hosts
 
