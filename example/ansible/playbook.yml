@@ -27,7 +27,7 @@
 
     - name: test ssh
       ansible.builtin.wait_for:
-        host: "{{ inventory_hostname }}"
+        host: "{{ ansible_host }}"
         port: 22
       delegate_to: localhost
 
