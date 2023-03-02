@@ -22,6 +22,7 @@ ansible-connection \
 ansible-doc \
 ansible-inventory \
 ansible-test \
+ansible-lint \
 ansible-pull"
 
 for COMMAND in ${COMMANDS}; do

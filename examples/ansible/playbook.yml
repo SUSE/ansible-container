@@ -2,7 +2,8 @@
 - hosts: alphost
   tasks:
     - name: site | hello world
-      shell: echo "Hi! Ansible is working"
+      ansible.builtin.command: echo "Hi! Ansible is working"
+      changed_when: false
 
     - name: Gather the package facts
       ansible.builtin.package_facts:
@@ -21,7 +22,7 @@
         - NetworkManager
 
     - name: Deactivate Wireless Network Interfaces
-      command: nmcli radio wifi off
+      ansible.builtin.command: nmcli radio wifi off
       become: true
       when: "'NetworkManager' in ansible_facts.packages"
 
@@ -32,8 +33,7 @@
       delegate_to: localhost
 
     - name: test webpage access
-      uri:
+      ansible.builtin.uri:
         url: https://www.example.com
-        return_content: yes
+        return_content: true
       register: webpage
-
