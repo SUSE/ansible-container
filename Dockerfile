@@ -27,12 +27,13 @@ LABEL com.suse.release-stage="alpha"
 ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
-RUN mkdir /container
+RUN mkdir -p /container
 COPY label-install \
      label-uninstall \
      ansible-wrapper.sh \
      hosts_alphost_group \
      /container
+ADD examples/ /container/examples
 RUN chmod +x /container/ansible-wrapper.sh
 
 WORKDIR /work

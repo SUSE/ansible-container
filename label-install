@@ -1,15 +1,15 @@
 #!/bin/sh
 create_command_bin() {
 SCRIPT=$1
-if [ ! -e ${TARGET}/${SCRIPT} ]; then
-        cd ${TARGET}; ln -s ansible-wrapper.sh ${SCRIPT}
+if [ ! -e ${TARGET_BIN}/${SCRIPT} ]; then
+        cd ${TARGET_BIN}; ln -s ansible-wrapper.sh ${SCRIPT}
 else
-        echo "${TARGET}/${SCRIPT} already exist, will not update it"
+        echo "${TARGET_BIN}/${SCRIPT} already exist, will not update it"
 fi
 }
 
-if [ ! -e ${TARGET}/${SCRIPT} ]; then
-        echo "Failed to create ${TARGET}/${SCRIPT}"
+if [ ! -e ${TARGET_BIN}/${SCRIPT} ]; then
+        echo "Failed to create ${TARGET_BIN}/${SCRIPT}"
         exit 1
 fi
 
@@ -27,20 +27,30 @@ ansible-inventory \
 ansible-test \
 ansible-pull"
 
-# determime target directory
-# either /usrlocalbin or current user bin
+# determime target root directory
+# either /usr/local/bin or current user ~/bin
 if [ -d /host/usr/local/bin ]; then
-        TARGET=/host/usr/local/bin
+        TARGET_ROOT=/host/usr/local
 elif [ -d /host/bin ] ; then
-        TARGET=/host/bin
+        TARGET_ROOT=/host
 else
         echo "could not determine copy target"
         exit 1
 fi
 
-cp /container/ansible-wrapper.sh ${TARGET}/ansible-wrapper.sh
+TARGET_BIN=${TARGET_ROOT}/bin
+TARGET_SHARE=${TARGET_ROOT}/share/ansible-container
+
+cp -v /container/ansible-wrapper.sh ${TARGET_BIN}/ansible-wrapper.sh
 
 for COMMAND in ${COMMANDS}; do
     create_command_bin ${COMMAND}
 done
 
+# Create container share area under /usr/local/share if it doesn't exist
+if [ ! -d ${TARGET_SHARE} ]; then
+        mkdir -p ${TARGET_SHARE}
+fi
+
+# Copy examples to container share area, overwriting any previous content.
+cp -av /container/examples ${TARGET_SHARE}/

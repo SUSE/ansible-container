@@ -2,11 +2,11 @@
 delete_file() {
 FILE=$1
 if [[ -e "/host/bin/${FILE}" || -L "/host/bin/${FILE}" ]]; then
-	/usr/bin/rm -vf /host/bin/${FILE}
+    /usr/bin/rm -vf /host/bin/${FILE}
 elif [[ -e "/host/usr/local/bin/${FILE}" || -L "/host/usr/local/bin/${FILE}" ]]; then
-        /usr/bin/rm -vf /host/usr/local/bin/${FILE}
+    /usr/bin/rm -vf /host/usr/local/bin/${FILE}
 else
-	echo "${FILE} not present, nothing to remove"
+    echo "${FILE} not present, nothing to remove"
 fi
 }
 
@@ -27,5 +27,9 @@ ansible-pull"
 for COMMAND in ${COMMANDS}; do
     delete_file ${COMMAND}
 done
+
+if [ -d /host/usr/local/share/ansible-container ]; then
+    rm -rf /host/usr/local/share/ansible-container
+fi
 
 exit 0
