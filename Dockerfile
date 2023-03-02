@@ -44,8 +44,8 @@ LABEL USER-INSTALL="/usr/bin/podman run --env IMAGE=IMAGE --security-opt label=d
 LABEL USER-UNINSTALL="/usr/bin/podman run --rm --security-opt label=disable -v \${PWD}/:/host IMAGE /bin/bash /container/label-uninstall"
 
 RUN zypper -v -n in \
-        ansible-core \
         ansible \
+        ansible-lint \
         ansible-test \
         git-core \
         openssh-clients \

@@ -25,6 +25,7 @@ ansible-connection \
 ansible-doc \
 ansible-inventory \
 ansible-test \
+ansible-lint \
 ansible-pull"
 
 # determime target root directory

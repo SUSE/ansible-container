@@ -1,0 +1,121 @@
+---
+- hosts: alphost
+  vars:
+    static_nics:
+      - name: enp2s0
+        ifname: enp2s0
+        ip4: 192.168.181.3/24
+        gw4: 192.168.181.2
+        dns4:
+          - 8.8.8.8
+
+      - name: enp3s0
+        ifname: enp3s0
+        ip4: 192.168.181.4/24
+        gw4: 192.168.181.2
+        dns4:
+          - 8.8.8.8
+
+    bonds:
+      - name: bondcon0
+        ifname: bond0
+        ip4: 192.168.181.10/24
+        gw4: 192.168.181.2
+        mode: active-backup
+
+      - name: bondcon1
+        ifname: bond1
+        ip4: 192.168.181.11/24
+        gw4: 192.168.181.2
+        mode: balance-alb
+
+    bonded_nics:
+      - name: bond0-if1
+        ifname: enp4s0
+        master: bond0
+
+      - name: bond0-if2
+        ifname: enp5s0
+        master: bond0
+
+      - name: bond1-if1
+        ifname: enp6s0
+        master: bond1
+
+      - name: bond1-if2
+        ifname: enp7s0
+        master: bond1
+
+  tasks:
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Ensure NetworkManager is installed
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      become: true
+      loop:
+        - NetworkManager
+
+    - name: configure NIC
+      community.general.nmcli:
+        conn_name: '{{ item.name }}'
+        ifname: '{{ item.ifname }}'
+        ip4: '{{ item.ip4 }}'
+        gw4: '{{ item.gw4 }}'
+        dns4: '{{ item.dns4 }}'
+        state: present
+        autoconnect: true
+        type: ethernet
+      become: true
+      loop: '{{ static_nics }}'
+
+    - name: configure NIC bond
+      community.general.nmcli:
+        type: bond
+        conn_name: '{{ item.name }}'
+        ifname: '{{ item.ifname }}'
+        ip4: '{{ item.ip4 }}'
+        gw4: '{{ item.gw4 }}'
+        mode: '{{ item.mode }}'
+        state: present
+      become: true
+      loop: "{{ bonds }}"
+
+
+    - name: add bond slave
+      community.general.nmcli:
+        type: bond
+        conn_name: '{{ item.name }}'
+        ifname: '{{ item.ifname }}'
+        ip4: '{{ item.ip4 }}'
+        gw4: '{{ item.gw4 }}'
+        mode: '{{ item.mode }}'
+        state: present
+      become: true
+      loop: "{{ bonds }}"
+
+
+    - name: add bond slave
+      community.general.nmcli:
+        type: bond-slave
+        conn_name: '{{ item.name }}'
+        ifname: '{{ item.ifname }}'
+        state: present
+        master: '{{ item.master }}'
+      become: true
+      loop: "{{ bonded_nics }}"
+
+    - name: Ping test Bond IPs
+      ansible.builtin.command: >-
+        ping -c 1 -W 0.1 {{ item.ip4 | ansible.utils.ipaddr('address') }}
+      loop: "{{ bonds }}"
+      changed_when: false
+
+    - name: Ping test static nics IPs
+      ansible.builtin.command: >-
+        ping -c 1 -W 0.1 {{ item.ip4 | ansible.utils.ipaddr('address') }}
+      loop: "{{ static_nics }}"
+      changed_when: false
