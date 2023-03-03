@@ -33,6 +33,7 @@ command.
 * ansible-doc
 * ansible-galaxy
 * ansible-inventory
+* ansible-lint
 * ansible-playbook
 * ansible-pull
 * ansible-test
