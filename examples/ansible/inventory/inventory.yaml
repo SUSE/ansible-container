@@ -2,4 +2,5 @@ alphost_group:
   hosts:
     alphost:
       ansible_host: host.containers.internal
+      ansible_python_interpreter: /usr/bin/python3
 
