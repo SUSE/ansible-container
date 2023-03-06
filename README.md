@@ -119,7 +119,7 @@ alphost                    : ok=8    changed=1    unreachable=0    failed=0    s
 ```
 
 ## Ansible driving nmcli to change system networking (network.yml)
-The 'network.yml' uses the 'community.general.nmcli' plugin to test common network operations such as assigning a static IP addresses to a NIC and creating bonded interfaces.
+The 'network.yml' uses the 'community.general.nmcli' plugin to test common network operations such as assigning static IP addresses to NICs and creating bonded interfaces.
 
 The NICs, IP addresses, bond names, bonded NICs are defined in the 'vars" section of network.yml and should be updated to reflect the current user environment. The 'network.yml' play is run by changing to directory `/usr/local/share/ansible-container/examples/ansible` and entering:
 ```shell
