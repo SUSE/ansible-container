@@ -135,7 +135,7 @@ ok: [alphost] => (item={'name': 'enp3s0', 'ifname': 'enp3s0', 'ip4': '192.168.18
 
 PLAY RECAP ***************************************************************************************************************
 alphost                    : ok=9    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-
+```
 
 ## Setup ALP as a Libvirt host
 
