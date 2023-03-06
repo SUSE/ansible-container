@@ -1,0 +1,126 @@
+---
+
+#
+# A example playbook showing how the setup an ALP system as a libvirt host.
+#
+
+
+- name: Setup ALP system as a libvirt host
+  hosts: alphost
+  vars:
+    workload:
+      name: libvirtd
+      image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm:latest
+      labels:
+        install: install
+        uninstall: uninstall
+      required_pkgs:
+        - kernel-default
+        - "-kernel-default-base"
+        - python3-libvirt-python
+      service:
+        name: libvirtd
+        wait_for:
+          path: /var/run/libvirt/libvirt-sock
+
+  tasks:
+
+    - name: Retrieve image for workload {{ workload.name }}
+      become: true
+      containers.podman.podman_image:
+        name: "{{ workload.image }}"
+        state: present
+      register: retrieve_workload_image
+
+    - name: Install tools for workload {{ workload.name }}
+      become: true
+      ansible.builtin.command: >-
+        podman container runlabel {{ workload.labels.install }} {{ workload.image }}
+      register: workload_runlabel_install
+      changed_when:
+        - ('already exist' not in workload_runlabel_install.stdout)
+
+    - name: Install required packages, if any, for workload {{ workload.name }}
+      become: true
+      ansible.builtin.package:
+        name: "{{ workload.required_pkgs }}"
+        state: present
+      register: required_pkgs_install
+      when:
+        - ((workload.required_pkgs | default([])) | length) > 0
+
+    - name: Handle reboot, if needed
+      when:
+        - required_pkgs_install is changed
+      block:
+
+        - name: Print message requesting immediate reboot
+          ansible.builtin.debug:
+            msg: >-
+              Required system packages have been installed via
+              transactional-update to support workload
+              {{ workload.name }}.
+              An immediate reboot is required to activate these
+              packages before proceding. Once reboot has completed
+              please re-run this playbook.
+
+        - name: Request immediate reboot  # noqa no-handler
+          ansible.builtin.fail:
+            msg: "Reboot required"
+
+    - name: Setup service for workload {{ workload.name }}
+      when:
+        - workload.service is defined
+      block:
+
+        - name: Ensure service can be started for workload {{ workload.name }}
+          become: true
+          ansible.builtin.systemd_service:
+            name: "{{ workload.service.name }}"
+            state: "started"
+          register: workload_service_start
+
+        - name: Enable service to start on reboot for workload {{ workload.name }}
+          become: true
+          ansible.builtin.systemd_service:
+            name: "{{ workload.service.name }}"
+            enabled: true
+          when:
+            - workload_service_start is success
+
+        - name: Wait for service to be ready for workload {{ workload.name }}
+          when:
+            - workload.service.wait_for is defined
+          block:
+
+            - name: Check service path for workload {{ workload.name }}
+              ansible.builtin.wait_for:
+                path: "{{ workload.service.wait_for.path }}"
+              when:
+                - workload.service.wait_for.path is defined
+
+            - name: Check service port for workload {{ workload.name }}
+              ansible.builtin.wait_for:
+                port: "{{ workload.service.wait_for.port }}"
+              when:
+                - workload.service.wait_for.port is defined
+
+#
+# Verify basic operation of the Libvirt service
+#
+
+- name: Verify that Libvirt is operational
+  hosts: alphost
+  tasks:
+
+    - name: Query running Libvirt VMs
+      become: true
+      community.libvirt.virt:
+        command: list_vms
+      register: virt_list_vms
+
+    - name: Report running Libvirt VMs, if any
+      ansible.builtin.debug:
+        msg: "Running VMs: {{ virt_list_vms.list_vms | join(', ') }}"
+      when:
+        - ((virt_list_vms.list_vms | default([])) | length) > 0
