@@ -1,5 +1,0 @@
-#! /bin/bash
-podman build . -t ansible
-(cd ~;podman container runlabel user-uninstall ansible)
-(cd ~;podman container runlabel user-install ansible)
-
