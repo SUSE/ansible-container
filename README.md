@@ -6,7 +6,7 @@ This container provides the ansible toolstack inside a container.
   * installs ansible and some additional tools
 ## System Setup ##
 * Podman, python3-lxml and python3-rpm are needed on the container host. The run label commands are hard coded to use podman. Python3-lxml and python3-rpm  are required on the container host for ansible to interact with libvirt and gather package facts. Kernel-default-base does not contain the needed drivers for many Network Manager (nmcli) operations such as creating bonded interfaces and should be replaced with kernel-default.
-  * sudo transactional-update pkg install python3-rpm python3-xml kernel-default -kernel-default-base
+  * sudo transactional-update pkg install python3-rpm python3-lxml kernel-default -kernel-default-base
   * system reboot is required after all transactional updates
     * sudo shutdown -r now
 
