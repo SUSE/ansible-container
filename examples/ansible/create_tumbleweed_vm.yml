@@ -1,0 +1,101 @@
+---
+
+#
+# A example playbook showing how the create a openSUSE Tumbleweed VM.
+#
+
+# Ensure the system is ready to act as a libvirt host.
+# NOTE: A reboot may be required if packages need to be installed.
+- name: Setup ALP system as a libvirt host
+  import_playbook: setup_libvirt_host.yml
+
+- name: Create an openSUSE Tumbleweed appliance
+  hosts: alphost
+  vars:
+    appliance:
+      name: tumbleweed
+      mirror: https://download.opensuse.org/tumbleweed/appliances
+      image: openSUSE-Tumbleweed-Minimal-VM.x86_64-kvm-and-xen
+      format: qcow2
+      checksum: sha256
+      vcpus: 1
+      memory_mb: 1024
+      disk_size_gb: 1
+    libvirt:
+      images: /var/lib/libvirt/images
+      network: sle_network
+
+  tasks:
+
+    - name: Download openSUSE Tumbleweed appliance image
+      become: true
+      ansible.builtin.get_url:
+        dest: "{{ libvirt.images }}"
+        url: "{{ item.url }}"
+        checksum: "{{ appliance.checksum }}:{{ item.url }}.{{ appliance.checksum }}"
+        mode: 0644
+      loop:
+        - name: "{{ appliance.name }}"
+          url: "{{ appliance.mirror }}/{{ appliance.image }}.{{ appliance.format }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Query list of configured libvirt networks
+      become: true
+      community.libvirt.virt_net:
+        command: list_nets
+      register: virt_net_list_nets
+      when:
+        - false  # doesn't work for now - remove when python3-lxml available
+
+    - name: Fail if required network is not available
+      fail:
+        msg: "ERROR: required '{{ libvirt.network }}' missing!"
+      when:
+        - virt_net_list_nets is not skipped  # remove when python3-lxml available
+        - libvirt.network not in virt_net_list_nets.list_nets
+
+    - name: Query list of libvirt VMs
+      become: true
+      community.libvirt.virt:
+        command: list_vms
+      register: virt_list_vms
+
+    - name: Create the openSUSE Tumbleweed appliance if not running
+      become: true
+      ansible.builtin.command: >-
+        /usr/local/bin/virt-install
+          --connect qemu:///system
+          --import
+          --name {{ appliance.name }}
+          --osinfo opensusetumbleweed
+          --virt-type kvm
+          --hvm
+          --machine q35
+          --boot hd
+          --cpu host-passthrough
+          --video vga
+          --console pty,target_type=virtio
+          --noautoconsole
+          --network network={{ libvirt.network }}
+          --rng /dev/urandom
+          --vcpu {{ appliance.vcpus }}
+          --memory {{ appliance.memory_mb }}
+          --cloud-init
+          --disk size={{ appliance.disk_size_gb }},backing_store={{ libvirt.images }}/{{ appliance.image }}.{{ appliance.format }},backing_format={{ appliance.format }},bus=virtio,cache=none
+          --graphics vnc,listen=0.0.0.0
+      register: virt_install_vm
+      when:
+        - ('tumbleweed' not in virt_list_vms.list_vms)
+
+    - name: Query list of libvirt VMs
+      become: true
+      community.libvirt.virt:
+        command: list_vms
+      register: virt_list_vms
+
+    - name: Show that Tumbleweed appliance has been created
+      ansible.builtin.debug:
+        msg: "Running VMs: {{ virt_list_vms.list_vms | join(', ') }}"
+      when:
+        - ('tumbleweed' in virt_list_vms.list_vms)

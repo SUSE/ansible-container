@@ -50,6 +50,7 @@ RUN zypper -v -n in \
         git-core \
         openssh-clients \
         python3-libvirt-python \
+        python3-lxml \
         python3-netaddr \
     ; \
     zypper clean --all
