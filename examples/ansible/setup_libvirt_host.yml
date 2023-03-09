@@ -17,9 +17,9 @@
       required_pkgs:
         - kernel-default
         - "-kernel-default-base"
-#       - netcat-openbsd  # uncomment once available
+        - netcat-openbsd
         - python3-libvirt-python
-#       - python3-lxml  # uncomment once available
+        - python3-lxml
       service:
         name: libvirtd
         wait_for:

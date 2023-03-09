@@ -45,14 +45,11 @@
       community.libvirt.virt_net:
         command: list_nets
       register: virt_net_list_nets
-      when:
-        - false  # doesn't work for now - remove when python3-lxml available
 
     - name: Fail if required network is not available
       fail:
         msg: "ERROR: required '{{ libvirt.network }}' missing!"
       when:
-        - virt_net_list_nets is not skipped  # remove when python3-lxml available
         - libvirt.network not in virt_net_list_nets.list_nets
 
     - name: Query list of libvirt VMs
