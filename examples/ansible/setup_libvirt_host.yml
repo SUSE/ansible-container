@@ -20,6 +20,7 @@
         - netcat-openbsd
         - python3-libvirt-python
         - python3-lxml
+        - swtpm
       service:
         name: libvirtd
         wait_for:
