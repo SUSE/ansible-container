@@ -72,7 +72,7 @@
       become: true
       loop: '{{ static_nics }}'
 
-    - name: configure NIC bond
+    - name: Create bonds
       community.general.nmcli:
         type: bond
         conn_name: '{{ item.name }}'
@@ -85,20 +85,7 @@
       loop: "{{ bonds }}"
 
 
-    - name: add bond slave
-      community.general.nmcli:
-        type: bond
-        conn_name: '{{ item.name }}'
-        ifname: '{{ item.ifname }}'
-        ip4: '{{ item.ip4 }}'
-        gw4: '{{ item.gw4 }}'
-        mode: '{{ item.mode }}'
-        state: present
-      become: true
-      loop: "{{ bonds }}"
-
-
-    - name: add bond slave
+    - name: add NICs to bonds
       community.general.nmcli:
         type: bond-slave
         conn_name: '{{ item.name }}'
