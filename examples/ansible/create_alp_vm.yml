@@ -1,7 +1,7 @@
 ---
 
 #
-# A example playbook showing how the create a openSUSE Tumbleweed VM.
+# A example playbook showing how the create a ALP VM.
 #
 
 # Ensure the system is ready to act as a libvirt host.
@@ -10,17 +10,17 @@
   import_playbook: setup_libvirt_host.yml
   tags: libvirt
 
-- name: Create an openSUSE Tumbleweed appliance
+- name: Create an ALP VM
   hosts: alphost
   vars:
     appliance:
-      name: tumbleweed
-      mirror: https://download.opensuse.org/tumbleweed/appliances
-      image: openSUSE-Tumbleweed-Minimal-VM.x86_64-kvm-and-xen
+      name: alptest
+      mirror: https://download.opensuse.org/repositories/SUSE:/ALP/images/
+      image: ALP-VM.x86_64-0.0.1-kvm-Build24.3
       format: qcow2
       checksum: sha256
       vcpus: 2
-      memory_mb: 2048
+      memory_mb: 1536
       disk_size_gb: 30
     libvirt:
       images: /var/lib/libvirt/images
@@ -28,12 +28,12 @@
 
   tasks:
 
-    - name: Check if we already have the openSUSE Tumbleweed image
+    - name: Check if we already have the ALP VM image
       ansible.builtin.stat:
         path: "{{ libvirt.images }}/{{ appliance.image }}.{{ appliance.format }}"
       register: stat_vm_image
 
-    - name: Download openSUSE Tumbleweed appliance image
+    - name: Download ALP VM image
       become: true
       ansible.builtin.get_url:
         dest: "{{ libvirt.images }}"
@@ -60,13 +60,24 @@
       when:
         - libvirt.network not in virt_net_list_nets.list_nets
 
+    - name: Determine list of SSH public keys
+      ansible.builtin.set_fact:
+        ssh_pub_keys: "{{ lookup('ansible.builtin.fileglob', '~/.ssh/*.pub').split(',') }}"
+
+    - name: Generate ignition config file
+      become: true
+      ansible.builtin.template:
+        src: "config.ign.j2"
+        dest: "{{ libvirt.images }}/{{ appliance.name }}.ign"
+        mode: 0644
+
     - name: Query list of libvirt VMs
       become: true
       community.libvirt.virt:
         command: list_vms
       register: virt_list_vms
 
-    - name: Create the openSUSE Tumbleweed appliance if not running
+    - name: Create the ALP VM if not running
       become: true
       ansible.builtin.command: >-
         /usr/local/bin/virt-install
@@ -86,12 +97,13 @@
           --rng /dev/urandom
           --vcpu {{ appliance.vcpus }}
           --memory {{ appliance.memory_mb }}
-          --cloud-init
           --disk size={{ appliance.disk_size_gb }},backing_store={{ libvirt.images }}/{{ appliance.image }}.{{ appliance.format }},backing_format={{ appliance.format }},bus=virtio,cache=none
           --graphics vnc,listen=0.0.0.0
+          --sysinfo type=fwcfg,entry0.name="opt/com.coreos/config",entry0.file="{{ libvirt.images }}/{{ appliance.name }}.ign"
+          --tpm backend.type=emulator,backend.version=2.0,model=tpm-tis
       register: virt_install_vm
       when:
-        - ('tumbleweed' not in virt_list_vms.list_vms)
+        - appliance.name not in virt_list_vms.list_vms
 
     - name: Query list of libvirt VMs
       become: true
@@ -99,8 +111,8 @@
         command: list_vms
       register: virt_list_vms
 
-    - name: Show that Tumbleweed appliance has been created
+    - name: Show that the ALP VM has been created
       ansible.builtin.debug:
         msg: "Running VMs: {{ virt_list_vms.list_vms | join(', ') }}"
       when:
-        - ('tumbleweed' in virt_list_vms.list_vms)
+        - appliance.name in virt_list_vms.list_vms
