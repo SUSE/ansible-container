@@ -1,5 +1,5 @@
 #! /bin/sh
-PATH=/sbin:/usr/sbin:/usr/local/sbin:/root/bin:/usr/local/bin:/usr/bin:/bin
+PATH=/sbin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin
 
 KEED_USERID=""
 if [[ $(id -ru) != "0" ]]; then
