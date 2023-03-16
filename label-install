@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 create_command_bin() {
 SCRIPT=$1
 if [ ! -e ${TARGET_BIN}/${SCRIPT} ]; then
@@ -32,8 +32,12 @@ ansible-pull"
 # either /usr/local/bin or current user ~/bin
 if [ -d /host/usr/local/bin ]; then
         TARGET_ROOT=/host/usr/local
+        IMAGE_CONF_DIR=etc/default
+        IMAGE_CONF_FILE=ansible-container
 elif [ -d /host/bin ] ; then
         TARGET_ROOT=/host
+        IMAGE_CONF_DIR=.config/ansible-container
+        IMAGE_CONF_FILE=image
 else
         echo "could not determine copy target"
         exit 1
@@ -41,6 +45,7 @@ fi
 
 TARGET_BIN=${TARGET_ROOT}/bin
 TARGET_SHARE=${TARGET_ROOT}/share/ansible-container
+TARGET_CONF_DIR=${TARGET_ROOT}/${IMAGE_CONF_DIR}
 
 cp -v /container/ansible-wrapper.sh ${TARGET_BIN}/ansible-wrapper.sh
 
@@ -55,3 +60,10 @@ fi
 
 # Copy examples to container share area, overwriting any previous content.
 cp -av /container/examples ${TARGET_SHARE}/
+
+# Save container image used to install the container to appropriate conf
+# file
+if [ ! -d ${TARGET_CONF_DIR} ]; then
+        mkdir -p ${TARGET_CONF_DIR}
+fi
+echo "IMAGE=${IMAGE}" > ${TARGET_CONF_DIR}/${IMAGE_CONF_FILE}

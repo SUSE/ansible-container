@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 delete_file() {
 FILE=$1
 if [[ -e "/host/bin/${FILE}" || -L "/host/bin/${FILE}" ]]; then
