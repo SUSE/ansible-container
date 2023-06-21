@@ -1,4 +1,3 @@
-markdown
 
 # Ansible Role: alp_reboot
 
