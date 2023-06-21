@@ -1,0 +1,19 @@
+- name: Remove the myplaybook.service service file
+  become: true
+  ansible.builtin.file:
+    path: /etc/systemd/system/myplaybook.service
+    state: absent
+
+- name: Remove the myplaybook.service service file
+  become: true
+  ansible.builtin.file:
+    path: "/home"
+    state: touch
+
+- name: Reload systemd daemon
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Conditionally end the playbook
+  meta: end_play

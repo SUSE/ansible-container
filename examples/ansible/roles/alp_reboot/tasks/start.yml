@@ -1,0 +1,41 @@
+- name: Enable lingering for the user
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ ansible_user }}"
+
+- name: Check if the service unit file exists
+  become: true
+  ansible.builtin.stat:
+    path: /etc/systemd/system/myplaybook.service
+  register: file_stat
+
+- name: Remove existing systemd service unit file
+  become: true
+  ansible.builtin.file:
+    path: /etc/systemd/system/myplaybook.service
+    state: absent
+  when: file_stat.stat.exists
+
+- name: Create systemd service unit file
+  become: true
+  ansible.builtin.template:
+    src: myplaybook.service.j2
+    dest: /etc/systemd/system/myplaybook.service
+  register: template_result
+  when: not file_stat.stat.exists
+
+
+- name: Enable and start the systemd service
+  become: true
+  ansible.builtin.service:
+    name: myplaybook
+    state: stopped
+    enabled: yes
+  when: not file_stat.stat.exists
+
+- name: Reboot system after all tasks
+  become: true
+  ansible.builtin.reboot:
+    reboot_timeout: 10
+  async: 600
+  poll: 0
+  when: not file_stat.stat.exists
