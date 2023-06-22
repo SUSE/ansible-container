@@ -4,11 +4,37 @@ This container provides the ansible toolstack inside a container.
 * '''Dockerfile''' with the definition of the ansible container
   * based on OpenSUSE Tumbleweed
   * installs ansible and some additional tools
+
+## Intended purpose
+
+This container is intended as a reference example of an Ansible workload
+container, based upon the latest Ansible version available for openSUSE
+Tumbleweed, for use on SUSE's Adaptable Linux Platform, and is tailored
+for that purpose, with included example playbooks that demonstrate how
+to configure networking and enable Libvirt support.
+
+### SUSE ALP Open Build Service
+
+This container is being built in the
+[Open Build Service SUSE:ALP:Workloads project](https://build.opensuse.org/package/show/SUSE:ALP:Workloads/ansible-container)
+and published in
+[registry.opensuse.org](https://registry.opensuse.org/cgi-bin/cooverview?srch_term=project%3D%5ESUSE%3A+container%3Dansible)
+
+See our [Open Build Service integration workflow](OpenBuildService.md)
+for more details.
+
+### Testing
+
+Note that [SUSE/alp-test-env][https://github.com/SUSE/alp-test-env] was
+developed to support development and testing of this container. It can
+be used to bring up one or more ALP test vms in a repeatable fashion
+that can be used for testing purposes.
+
 ## System Setup ##
 * Podman, python3-lxml and python3-rpm are needed on the container host. The run label commands are hard coded to use podman. Python3-lxml and python3-rpm  are required on the container host for ansible to interact with libvirt and gather package facts. Kernel-default-base does not contain the needed drivers for many Network Manager (nmcli) operations such as creating bonded interfaces and should be replaced with kernel-default.
-  * sudo transactional-update pkg install python3-rpm python3-lxml kernel-default -kernel-default-base
+  * `sudo transactional-update pkg install python3-rpm python3-lxml kernel-default -kernel-default-base`
   * system reboot is required after all transactional updates
-    * sudo shutdown -r now
+    * `sudo shutdown -r now`
 
 ## Ansible commands
 The ansible commands are provided as symlinks to ansible-wrapper.sh.
