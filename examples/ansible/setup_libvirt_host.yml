@@ -34,7 +34,9 @@
         name: libvirtd
         wait_for:
           path: /var/run/libvirt/libvirt-sock
+  
   tasks:
+
     - name: Retrieve image for workload {{ workload.name }}
       become: true
       containers.podman.podman_image:
@@ -50,7 +52,7 @@
         podman container runlabel {{ workload.labels.install }} {{ workload.image }}
       register: workload_runlabel_install
       changed_when:
-        - "'already exist' not in workload_runlabel_install.stdout"
+        - ('already exist' not in workload_runlabel_install.stdout")
       failed_when:
         - workload_runlabel_install is failed
 
@@ -82,7 +84,7 @@
               packages before proceding. Once reboot has completed
               please re-run this playbook.
 
-        - name: Request immediate reboot
+        - name: Request immediate reboot  # noqa no-handler
           ansible.builtin.fail:
             msg: "Reboot required"
 
@@ -98,6 +100,7 @@
       when:
         - workload.service is defined
       block:
+        
         - name: Ensure service can be started for workload {{ workload.name }}
           become: true
           ansible.builtin.systemd_service:
@@ -129,9 +132,14 @@
               when:
                 - workload.service.wait_for.port is defined
 
+#
+# Verify basic operation of the Libvirt service
+#
+
 - name: Verify that Libvirt is operational
   hosts: alphost
   tasks:
+    
     - name: Query running Libvirt VMs
       become: true
       community.libvirt.virt:
