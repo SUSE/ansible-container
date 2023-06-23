@@ -81,7 +81,7 @@
 
     - name: Handle auto reboot, if needed # Check if automatic reboot is required
       include_role:
-        name: alp_reboot
+        name: resume_after_reboot
         tasks_from: setup
       when: required_pkgs_install.changed and (reboot_mode | default('manual')) == 'auto'
 
@@ -131,6 +131,6 @@
 
     - name: clean up # Cleanup tasks
       include_role:
-        name: alp_reboot
+        name: resume_after_reboot
         tasks_from: cleanup
       when: (reboot_mode | default('manual')) == 'auto' # If reboot mode is automatic
