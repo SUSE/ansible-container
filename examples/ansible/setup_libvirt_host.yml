@@ -4,7 +4,12 @@
 # A example playbook showing how the setup an ALP system as a libvirt host.
 #
 
-# use ansible-playbook setup_libvirt_host.yml -e "playbook_path=$(pwd)" -e "ansible_user=$(whoami)" -e "reboot_mode=auto" to enable auto reboot while running as root ensure ansible container is installed as root.
+# Use:
+#   ansible-playbook setup_libvirt_host.yml -e "playbook_path=$(pwd)"
+#       -e "ansible_user=$(whoami)"
+#       -e "reboot_mode=auto"
+# to enable auto reboot while running as root to ensure ansible container
+# is installed as root.
 
 - name: Setup ALP system as a libvirt host
   hosts: alphost
