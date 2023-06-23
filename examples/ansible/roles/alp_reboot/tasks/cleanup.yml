@@ -2,10 +2,10 @@
   ansible.builtin.command:
     cmd: "loginctl disable-linger {{ ansible_user }}"
 
-- name: Remove the myplaybook.service service file
+- name: Remove the resume-ansible-playbook.service service file
   become: true
   ansible.builtin.file:
-    path: /etc/systemd/system/myplaybook.service
+    path: /etc/systemd/system/resume-ansible-playbook.service
     state: absent
 
 - name: Reload systemd daemon

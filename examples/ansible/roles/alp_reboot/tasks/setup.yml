@@ -5,28 +5,28 @@
 - name: Check if the service unit file exists
   become: true
   ansible.builtin.stat:
-    path: /etc/systemd/system/myplaybook.service
+    path: /etc/systemd/system/resume-ansible-playbook.service
   register: file_stat
 
 - name: Remove existing systemd service unit file
   become: true
   ansible.builtin.file:
-    path: /etc/systemd/system/myplaybook.service
+    path: /etc/systemd/system/resume-ansible-playbook.service
     state: absent
   when: file_stat.stat.exists
 
 - name: Create systemd service unit file
   become: true
   ansible.builtin.template:
-    src: myplaybook.service.j2
-    dest: /etc/systemd/system/myplaybook.service
+    src: resume-ansible-playbook.service.j2
+    dest: /etc/systemd/system/resume-ansible-playbook.service
   register: template_result
   when: not file_stat.stat.exists
 
 - name: Enable and start the systemd service
   become: true
   ansible.builtin.service:
-    name: myplaybook
+    name: resume-ansible-playbook
     state: stopped
     enabled: yes
   when: not file_stat.stat.exists
