@@ -1,3 +1,7 @@
+- name: Disable lingering for user
+  ansible.builtin.command:
+    cmd: "loginctl disable-linger {{ ansible_user }}"
+
 - name: Remove the myplaybook.service service file
   become: true
   ansible.builtin.file:

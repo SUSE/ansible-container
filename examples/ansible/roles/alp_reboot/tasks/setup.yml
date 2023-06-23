@@ -1,4 +1,4 @@
-- name: Enable lingering for the user
+- name: Enable lingering for the user #As the playbook is run by a non-root user, ensure that the user logs in at boot and remains active even post logout from a display manager or terminal session.
   ansible.builtin.command:
     cmd: "loginctl enable-linger {{ ansible_user }}"
 
@@ -22,7 +22,6 @@
     dest: /etc/systemd/system/myplaybook.service
   register: template_result
   when: not file_stat.stat.exists
-
 
 - name: Enable and start the systemd service
   become: true
