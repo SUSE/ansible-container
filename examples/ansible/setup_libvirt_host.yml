@@ -82,7 +82,7 @@
     - name: Handle auto reboot, if needed # Check if automatic reboot is required
       include_role:
         name: alp_reboot
-        tasks_from: start
+        tasks_from: setup
       when: required_pkgs_install.changed and (reboot_mode | default('manual')) == 'auto'
 
     - name: Setup service for workload {{ workload.name }}
@@ -132,5 +132,5 @@
     - name: clean up # Cleanup tasks
       include_role:
         name: alp_reboot
-        tasks_from: end
+        tasks_from: cleanup
       when: (reboot_mode | default('manual')) == 'auto' # If reboot mode is automatic
