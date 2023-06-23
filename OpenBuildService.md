@@ -12,6 +12,11 @@ to simplify maintenance activities.
 
 ## Maintenance Worflow
 
+The following assumes a working knowledge of the
+[SUSE Open Build Service (OBS)](https://build.opensuse.org/). For more details
+see the [official documentation](https://openbuildservice.org/help/) and the
+[Wiki](https://en.opensuse.org/Portal:Build_Service).
+
 The maintenance workflow can leverage the provided source service
 integration, using the following workflow:
 
@@ -24,7 +29,8 @@ integration, using the following workflow:
 
 ## Branch the main package
 
-Create a branch of the main package under your home area, using the [osc](https://en.opensuse.org/openSUSE:OSC) command:
+Create a branch of the main package under your home area, using the
+[osc](https://en.opensuse.org/openSUSE:OSC) command:
 
 ```shell
 % osc bco SUSE:ALP:Workloads/ansible-container
@@ -40,9 +46,9 @@ to be able to see it in registry.opensuse.org.
 ## Update the sources
 
 To update the container build to use the latest sources from
-[SUSE/ansible-container](https://github.com/SUSE/ansible-container) you can
-trigger the remote source services, which will update the
-sources in the build servuce, as follows:
+[SUSE/ansible-container](https://github.com/SUSE/ansible-container) you
+can trigger the remote source services, which will update the sources
+in the build servuce, as follows:
 
 ```shell
 % cd home:username:branches:SUSE:ALP:Workloads/ansible-container
