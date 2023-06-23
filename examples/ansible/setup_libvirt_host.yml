@@ -41,15 +41,18 @@
         name: "{{ workload.image }}"
         state: present
       register: retrieve_workload_image
-      failed_when: retrieve_workload_image is failed
+      failed_when:
+        - retrieve_workload_image is failed
 
     - name: Install tools for workload {{ workload.name }}
       become: true
       ansible.builtin.command: >-
         podman container runlabel {{ workload.labels.install }} {{ workload.image }}
       register: workload_runlabel_install
-      changed_when: "'already exist' not in workload_runlabel_install.stdout"
-      failed_when: workload_runlabel_install is failed
+      changed_when:
+        - "'already exist' not in workload_runlabel_install.stdout"
+      failed_when:
+        - workload_runlabel_install is failed
 
     - name: Install required packages, if any, for workload {{ workload.name }}
       become: true
@@ -57,12 +60,16 @@
         name: "{{ workload.required_pkgs }}"
         state: present
       register: required_pkgs_install
-      when: ((workload.required_pkgs | default([])) | length) > 0
-      failed_when: required_pkgs_install is failed
+      when:
+        - ((workload.required_pkgs | default([])) | length) > 0
+      failed_when:
+        - required_pkgs_install is failed
 
 
     - name: Handle manual reboot, if needed
-      when: required_pkgs_install.changed and (reboot_mode | default('manual')) == 'manual'
+      when:
+        - required_pkgs_install.changed
+        - (reboot_mode | default('manual')) == 'manual'
       block:
 
         - name: Print message requesting immediate reboot
@@ -83,10 +90,13 @@
       include_role:
         name: resume_after_reboot
         tasks_from: setup
-      when: required_pkgs_install.changed and (reboot_mode | default('manual')) == 'auto'
+      when:
+        - required_pkgs_install.changed
+        - (reboot_mode | default('manual')) == 'auto'
 
     - name: Setup service for workload {{ workload.name }}
-      when: workload.service is defined
+      when:
+        - workload.service is defined
       block:
         - name: Ensure service can be started for workload {{ workload.name }}
           become: true
@@ -100,20 +110,24 @@
           ansible.builtin.systemd_service:
             name: "{{ workload.service.name }}"
             enabled: true
-          when: workload_service_start is success
+          when:
+            - workload_service_start is success
 
         - name: Wait for service to be ready for workload {{ workload.name }}
-          when: workload.service.wait_for is defined
+          when:
+            - workload.service.wait_for is defined
           block:
             - name: Check service path for workload {{ workload.name }}
               ansible.builtin.wait_for:
                 path: "{{ workload.service.wait_for.path }}"
-              when: workload.service.wait_for.path is defined
+              when:
+                - workload.service.wait_for.path is defined
 
             - name: Check service port for workload {{ workload.name }}
               ansible.builtin.wait_for:
                 port: "{{ workload.service.wait_for.port }}"
-              when: workload.service.wait_for.port is defined
+              when:
+                - workload.service.wait_for.port is defined
 
 - name: Verify that Libvirt is operational
   hosts: alphost
@@ -127,10 +141,12 @@
     - name: Report running Libvirt VMs, if any
       ansible.builtin.debug:
         msg: "Running VMs: {{ virt_list_vms.list_vms | join(', ') }}"
-      when: ((virt_list_vms.list_vms | default([])) | length) > 0
+      when:
+        - ((virt_list_vms.list_vms | default([])) | length) > 0
 
     - name: clean up # Cleanup tasks
       include_role:
         name: resume_after_reboot
         tasks_from: cleanup
-      when: (reboot_mode | default('manual')) == 'auto' # If reboot mode is automatic
+      when:
+        - (reboot_mode | default('manual')) == 'auto' # If reboot mode is automatic

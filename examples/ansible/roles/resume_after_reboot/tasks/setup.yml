@@ -13,15 +13,17 @@
   ansible.builtin.file:
     path: /etc/systemd/system/resume-ansible-playbook.service
     state: absent
-  when: file_stat.stat.exists
+  when:
+    - file_stat.stat.exists
 
 - name: Create systemd service unit file
   become: true
   ansible.builtin.template:
-    src: resume-ansible-playbook.service.j2
+    src: resume-ansible-playbook.j2
     dest: /etc/systemd/system/resume-ansible-playbook.service
   register: template_result
-  when: not file_stat.stat.exists
+  when:
+    - not file_stat.stat.exists
 
 - name: Enable and start the systemd service
   become: true
@@ -29,7 +31,8 @@
     name: resume-ansible-playbook
     state: stopped
     enabled: yes
-  when: not file_stat.stat.exists
+  when:
+    - not file_stat.stat.exists
 
 - name: Reboot system after all tasks
   become: true
@@ -37,4 +40,5 @@
     reboot_timeout: 10
   async: 600
   poll: 0
-  when: not file_stat.stat.exists
+  when:
+    - not file_stat.stat.exists
