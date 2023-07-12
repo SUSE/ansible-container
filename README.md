@@ -220,3 +220,25 @@ PLAY RECAP *********************************************************************
 alphost                    : ok=15   changed=4    unreachable=0    failed=0    skipped=6    rescued=0    ignored=0
 
 ```
+
+## Setup NeuVector on ALP host
+
+The setup_neuvector.yml playbook can be used to manage the NeuVector workload on an ALP host. It supports two operations: setup and removal of NeuVector. The operation is determined by the 'neuvector_state' variable, which can be set to 'present' or 'absent'.
+
+To try out this example playbook, you can change directory to the /usr/local/share/ansible-container/examples/ansible directory and run the following command:
+
+```shell
+$ cd /usr/local/share/ansible-container/examples/ansible
+$ ansible-playbook setup_neuvector.yml
+...
+TASK [Print message connect to NeuVector] ************************************************************************************************************************************************************************
+ok: [alphost] => {
+    "msg": "NeuVector is running on https://HOST_RUNNING_NEUVECTOR_SERVICE:8443 You need to accept the warning about the self-signed SSL certificate and log in with the following default credentials: admin / admin."
+}
+...
+PLAY RECAP *****************************************************************************************************************************
+alphost                    : ok=8   changed=4    unreachable=0    failed=0    skipped=3    rescued=0    ignored=0
+
+```
+
+For more details, you can refer to the [SUSE ALP Micro documentation](https://documentation.suse.com/alp/micro/html/alp-micro/available-alp-workloads.html#task-run-neuvector-with-podman).
