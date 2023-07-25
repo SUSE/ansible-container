@@ -1,0 +1,80 @@
+---
+# This Ansible playbook is used to manage the NeuVector workload on a ALP host.
+# The steps are based on : https://build.opensuse.org/package/view_file/SUSE:ALP:Workloads/neuvector-demo/README.md?expand=1
+# and https://documentation.suse.com/alp/micro/html/alp-micro/available-alp-workloads.html#task-run-neuvector-with-podman
+# The playbook supports two operations: setup and removal of NeuVector.
+# The operation is determined by the 'neuvector_state' variable, which can be set to 'present' or 'absent'.
+# When 'neuvector_state' is set to 'present', the playbook will:
+#   - Set SELinux into permissive mode
+#   - Retrieve the NeuVector image
+#   - Execute nevector runlabel INSTALL
+#   - Start the NeuVector service
+#   - Enable the NeuVector service to start on a reboot
+#   - Print a message with the connection details for NeuVector
+# When 'neuvector_state' is set to 'absent', the playbook will:
+#   - Stop the NeuVector service
+#   - Execute nevector runlabel UNINSTALL
+#   - Remove the NeuVector image
+
+- name: Running the NeuVector workload
+  hosts: alphost
+  become: true
+  vars:
+    neuvector_state: present
+    workload:
+      name: neuvector
+      image: registry.opensuse.org/suse/alp/workloads/bci_containerfiles/suse/alp/workloads/neuvector-demo:latest
+
+  tasks:
+    - name: Setup NeuVector
+      when:
+        - neuvector_state == "present"
+      block:
+        - name: Set SELinux into permissive mode
+          ansible.posix.selinux:
+            policy: targeted
+            state: permissive
+
+        - name: Retrieve image for workload {{ workload.name }}
+          containers.podman.podman_image:
+            name: "{{ workload.image }}"
+            state: present
+
+        - name: Execute nevector runlabel INSTALL
+          ansible.builtin.command: >-
+            podman container runlabel install {{ workload.image }}
+          register: workload_runlabel_install
+          changed_when:
+            - ('already exist' not in workload_runlabel_install.stdout)
+
+        - name: Enable and start NeuVector service
+          ansible.builtin.systemd:
+            name: neuvector.service
+            state: started
+            enabled: yes
+
+        - name: Print message connect to NeuVector
+          ansible.builtin.debug:
+            msg: >-
+              NeuVector is running on https://{{ ansible_default_ipv4.address }}:8443
+              You need to accept the warning about the self-signed SSL certificate
+              and log in with the following default credentials: admin / admin.
+
+    - name: Remove NeuVector
+      when:
+        - neuvector_state == "absent"
+      block:
+        - name: Stop NeuVector service
+          ansible.builtin.systemd:
+            name: neuvector.service
+            state: stopped
+            enabled: no
+
+        - name: Execute nevector runlabel UNINSTALL
+          ansible.builtin.command: >-
+            podman container runlabel uninstall {{ workload.image }}
+
+        - name: Remove image for workload {{ workload.name }}
+          containers.podman.podman_image:
+            name: "{{ workload.image }}"
+            state: absent
