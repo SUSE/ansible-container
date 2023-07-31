@@ -241,4 +241,22 @@ alphost                    : ok=8   changed=4    unreachable=0    failed=0    sk
 
 ```
 
-For more details, you can refer to the [SUSE ALP Micro documentation](https://documentation.suse.com/alp/micro/html/alp-micro/available-alp-workloads.html#task-run-neuvector-with-podman).
+For more details, you can refer to the [SUSE ALP documentation](https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-neuvector-with-podman).
+
+## Setup Kea DHCP Server on ALP Host
+
+The setup_kea_dhcp_server.yml playbook automates the deployment and management of the Kea DHCP server workload on an ALP host. The inclusion of the -e run_dhcpv6=true argument allows users to enable the DHCPv6 functionalities when desired.
+
+```shell
+$ cd /usr/local/share/ansible-container/examples/ansible
+$ ansible-playbook setup_kea_dhcp_server.yml -e run_dhcpv6=true
+...
+TASK [Start Kea DHCPv6 server using systemd] *********************************************************************************************************************************************************************
+changed: [alphost]
+
+PLAY RECAP *******************************************************************************************************************************************************************************************************
+alphost                    : ok=6    changed=5    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0  
+
+```
+
+NOTE: The playbook allows for custom configuration templates for DHCPv4 and DHCPv6. If using custom templates, ensure they're appropriately formatted and paths are correctly specified in the playbook variables. The Kea configuration files—kea-dhcp4.conf and kea-dhcp6.conf—are located in the /etc/kea directory. They include the default configuration. You can find detailed information about configuring the DHCP server in the official documentation at https://kea.readthedocs.io/
