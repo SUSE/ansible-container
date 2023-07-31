@@ -81,7 +81,5 @@
   handlers:
     - name: Reload Kea configuration
       ansible.builtin.command: /usr/local/bin/keactrl reload
-      changed_when:
-        - '"Configuration reloaded successfully" in kea_reload_output.stdout'
       when:
         - dhcp4_config.changed or dhcp6_config.changed
