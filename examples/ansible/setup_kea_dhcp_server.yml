@@ -69,6 +69,8 @@
             name: kea-dhcp4.service
             state: started
             enabled: yes
+          when:
+            - not run_dhcpv6
 
         - name: Start Kea DHCPv6 server using systemd
           ansible.builtin.systemd:
