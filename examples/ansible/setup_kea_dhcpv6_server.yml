@@ -1,6 +1,6 @@
 ---
-# Ansible Playbook: Manage Kea DHCPV4 Server Workload on ALP Host
-# Description: This Ansible playbook automates the setup of the Kea DHCPV4 server workload
+# Ansible Playbook: Manage Kea DHCPV6 Server Workload on ALP Host
+# Description: This Ansible playbook automates the setup of the Kea DHCP server workload
 # on an ALP host. It follows the steps documented in the URL provided below.
 # Kea Workload Documentation: https://build.opensuse.org/package/view_file/SUSE:ALP:Workloads/kea-container/README.md?expand=1
 
@@ -11,13 +11,14 @@
     valid_lifetime: 4000
     renew_timer: 1000
     rebind_timer: 2000
+    preferred_lifetime: 3000
     interface_name: 'eth0'
     lease_database_type: 'memfile'
     lease_database_persist: true
-    lease_database_name: '/var/lib/kea/dhcp4.leases'
+    lease_database_name: '/var/lib/kea/dhcp6.leases'
     subnet_id: 1
-    subnet: '192.0.2.0/24'
-    pool_range: '192.0.2.1 - 192.0.2.200'
+    subnet: '2001:db8:1::/64'
+    pool_range: '2001:db8:1::1-2001:db8:1::ffff'
     workload:
       name: kea
       image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kea:latest
@@ -37,22 +38,22 @@
 
     - name: Add firewall exception rule for DHCP
       ansible.posix.firewalld:
-        service: dhcp
+        service: dhcpv6
         permanent: true
         state: enabled
         immediate: true
 
-    - name: Generate Kea DHCPv4 configuration from template
+    - name: Generate Kea DHCPv6 configuration from template
       ansible.builtin.template:
-        src: "kea-dhcp4.conf.j2"
-        dest: "/etc/kea/kea-dhcp4.conf"
+        src: "kea-dhcp6.conf.j2"
+        dest: "/etc/kea/kea-dhcp6.conf"
         mode: '0644'
-      register: dhcp4_config
+      register: dhcp6_config
       notify: Reload Kea configuration
 
-    - name: Start Kea DHCPv4 server using systemd
+    - name: Start Kea DHCPv6 server using systemd
       ansible.builtin.systemd:
-        name: kea-dhcp4.service
+        name: kea-dhcp6.service
         state: started
         enabled: true
 
@@ -60,4 +61,4 @@
     - name: Reload Kea configuration
       ansible.builtin.command: /usr/local/bin/keactrl reload
       changed_when:
-        - dhcp4_config.changed
+        - dhcp6_config.changed
