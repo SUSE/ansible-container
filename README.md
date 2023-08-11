@@ -258,23 +258,10 @@ PLAY RECAP *********************************************************************
 alphost                    : ok=6    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
 
 ```
-### Playbook Variables:
+### Configuring DHCP Server:
 
-#### Lease Parameters:
-- **valid_lifetime**: Duration of the lease.
-- **renew_timer**: Time for lease renewals.
-- **rebind_timer**: Time for lease rebinds.
-- **preferred_lifetime**: Preferred duration of the lease before attempting renewal.
+For configuration, the playbooks utilize sample files named kea-dhcp4.conf and kea-dhcp6.conf. These files are located in the /templates directory and are provided as default configurations for Kea DHCPv4 and DHCPv6 servers, respectively.
 
-#### Network Configuration:
-- **interface_name**: The network interface.
-- **subnet**: Network subnet.
-- **subnet_id**: ID of the subnet.
-- **pool_range**: DHCP pool address range.
+While these default configurations are suitable for many environments, you might have specific requirements or preferences for your setup. In such cases, you can modify these files in the /templates directory before running the playbook, allowing for a more tailored DHCP configuration.
 
-#### Lease Database Configuration:
-- **lease_database_type**: Type of the database.
-- **lease_database_persist**: Whether the database is persistent.
-- **lease_database_name**: Path to the lease database.
-
-NOTE: The playbook allows for custom configuration templates for DHCPv4 and DHCPv6. If using custom templates, ensure they're appropriately formatted and paths are correctly specified in the playbook variables. The Kea configuration files—kea-dhcp4.conf and kea-dhcp6.conf are located in the /etc/kea directory. They include the default configuration. You can find detailed information about configuring the DHCP server in the official documentation at https://kea.readthedocs.io/
+After deployment, the active Kea configuration files can be found in the /etc/kea directory. For a deep dive into configuring the Kea DHCP server, kindly refer to the official documentation available at https://kea.readthedocs.io/

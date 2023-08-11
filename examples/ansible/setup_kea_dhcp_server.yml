@@ -8,16 +8,6 @@
   hosts: alphost
   become: true
   vars:
-    valid_lifetime: 4000
-    renew_timer: 1000
-    rebind_timer: 2000
-    interface_name: 'eth0'
-    lease_database_type: 'memfile'
-    lease_database_persist: true
-    lease_database_name: '/var/lib/kea/dhcp4.leases'
-    subnet_id: 1
-    subnet: '192.0.2.0/24'
-    pool_range: '192.0.2.1 - 192.0.2.200'
     workload:
       name: kea
       image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kea:latest
@@ -42,9 +32,9 @@
         state: enabled
         immediate: true
 
-    - name: Generate Kea DHCPv4 configuration from template
-      ansible.builtin.template:
-        src: "kea-dhcp4.conf.j2"
+    - name: Copy Kea DHCPv4 configuration
+      ansible.builtin.copy:
+        src: "kea-dhcp4.conf"
         dest: "/etc/kea/kea-dhcp4.conf"
         mode: '0644'
       register: dhcp4_config
@@ -59,5 +49,3 @@
   handlers:
     - name: Reload Kea configuration
       ansible.builtin.command: /usr/local/bin/keactrl reload
-      changed_when:
-        - dhcp4_config.changed
