@@ -32,12 +32,11 @@
         state: enabled
         immediate: true
 
-    - name: Copy Kea DHCPv4 configuration
-      ansible.builtin.copy:
-        src: "kea-dhcp4.conf"
+    - name: Configure Kea DHCPv4 using template
+      ansible.builtin.template:
+        src: "kea-dhcp4.conf.j2"
         dest: "/etc/kea/kea-dhcp4.conf"
         mode: '0644'
-      register: dhcp4_config
       notify: Reload Kea configuration
 
     - name: Start Kea DHCPv4 server using systemd
@@ -49,3 +48,6 @@
   handlers:
     - name: Reload Kea configuration
       ansible.builtin.command: /usr/local/bin/keactrl reload
+      register: kea_reload_result
+      changed_when:
+        - '"INFO/keactrl: Reloading kea-dhcp4..." in kea_reload_result.stdout'
