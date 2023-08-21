@@ -245,18 +245,23 @@ For more details, you can refer to the [SUSE ALP documentation](https://document
 
 ## Setup Kea DHCP Server on ALP Host
 
-The setup_kea_dhcp_server.yml playbook automates the deployment and management of the Kea DHCP server workload on an ALP host. The inclusion of the -e run_dhcpv6=true argument allows users to enable the DHCPv6 functionalities when desired.
+The setup_kea_dhcp_server.yml and setup_kea_dhcpv6_server.yml playbook automates the deployment and management of the Kea DHCPV4 and DHCPV6 server workload on an ALP host.
 
 ```shell
 $ cd /usr/local/share/ansible-container/examples/ansible
-$ ansible-playbook setup_kea_dhcp_server.yml -e run_dhcpv6=true
+$ ansible-playbook setup_kea_dhcp_server.yml
 ...
-TASK [Start Kea DHCPv6 server using systemd] *********************************************************************************************************************************************************************
+TASK [Start Kea DHCPv4 server using systemd] *********************************************************************************************************************************************************************
 changed: [alphost]
 
 PLAY RECAP *******************************************************************************************************************************************************************************************************
-alphost                    : ok=6    changed=5    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0  
+alphost                    : ok=6    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
 
 ```
+### Configuring DHCP Server:
 
-NOTE: The playbook allows for custom configuration templates for DHCPv4 and DHCPv6. If using custom templates, ensure they're appropriately formatted and paths are correctly specified in the playbook variables. The Kea configuration files—kea-dhcp4.conf and kea-dhcp6.conf—are located in the /etc/kea directory. They include the default configuration. You can find detailed information about configuring the DHCP server in the official documentation at https://kea.readthedocs.io/
+For configuration, the playbooks utilize sample files named kea-dhcp4.conf and kea-dhcp6.conf. These files are located in the /templates directory and are provided as default configurations for Kea DHCPv4 and DHCPv6 servers, respectively.
+
+While these default configurations are suitable for many environments, you might have specific requirements or preferences for your setup. In such cases, you can modify these files in the /templates directory before running the playbook, allowing for a more tailored DHCP configuration.
+
+After deployment, the active Kea configuration files can be found in the /etc/kea directory. For a deep dive into configuring the Kea DHCP server, kindly refer to the official documentation available at https://kea.readthedocs.io/

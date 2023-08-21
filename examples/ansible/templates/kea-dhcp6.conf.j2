@@ -1,0 +1,133 @@
+// Minimal Kea DHCPv6 Configuration Example
+// For full configuration details, refer to:
+// https://gitlab.isc.org/isc-projects/kea/-/blob/master/src/bin/keactrl/kea-dhcp6.conf.pre
+//
+// Note: This is a simplified configuration. Consult the linked full configuration for comprehensive details.
+
+{
+    "Dhcp6": {
+        "interfaces-config": {
+            "interfaces": []
+        },
+        "control-socket": {
+            "socket-type": "unix",
+            "socket-name": "/tmp/kea6-ctrl-socket"
+        },
+        "lease-database": {
+            "type": "memfile",
+            "lfc-interval": 3600
+        },
+        "expired-leases-processing": {
+            "reclaim-timer-wait-time": 10,
+            "flush-reclaimed-timer-wait-time": 25,
+            "hold-reclaimed-time": 3600,
+            "max-reclaim-leases": 100,
+            "max-reclaim-time": 250,
+            "unwarned-reclaim-cycles": 5
+        },
+        "renew-timer": 1000,
+        "rebind-timer": 2000,
+        "preferred-lifetime": 3000,
+        "valid-lifetime": 4000,
+        "option-data": [
+            {
+                "name": "dns-servers",
+                "data": "2001:db8:2::45, 2001:db8:2::100"
+            },
+            {
+                "code": 12,
+                "data": "2001:db8::1"
+            },
+            {
+                "name": "new-posix-timezone",
+                "data": "EST5EDT4\\,M3.2.0/02:00\\,M11.1.0/02:00"
+            },
+            {
+                "name": "preference",
+                "data": "0xf0"
+            },
+            {
+                "name": "bootfile-param",
+                "data": "root=/dev/sda2, quiet, splash"
+            }
+        ],
+        "subnet6": [
+            {
+                "id": 1,
+                "subnet": "2001:db8:1::/64",
+                "pools": [
+                    {
+                        "pool": "2001:db8:1::/80"
+                    }
+                ],
+                "pd-pools": [
+                    {
+                        "prefix": "2001:db8:8::",
+                        "prefix-len": 56,
+                        "delegated-len": 64
+                    }
+                ],
+                "option-data": [
+                    {
+                        "name": "dns-servers",
+                        "data": "2001:db8:2::dead:beef, 2001:db8:2::cafe:babe"
+                    }
+                ],
+                "reservations": [
+                    {
+                        "duid": "01:02:03:04:05:0A:0B:0C:0D:0E",
+                        "ip-addresses": ["2001:db8:1::100"]
+                    },
+                    {
+                        "hw-address": "00:01:02:03:04:05",
+                        "ip-addresses": ["2001:db8:1::101"],
+                        "option-data": [
+                            {
+                                "name": "dns-servers",
+                                "data": "3000:1::234"
+                            },
+                            {
+                                "name": "nis-servers",
+                                "data": "3000:1::234"
+                            }
+                        ],
+                        "client-classes": ["special_snowflake", "office"]
+                    },
+                    {
+                        "duid": "01:02:03:04:05:06:07:08:09:0A",
+                        "ip-addresses": ["2001:db8:1:0:cafe::1"],
+                        "prefixes": ["2001:db8:2:abcd::/64"],
+                        "hostname": "foo.example.com",
+                        "option-data": [
+                            {
+                                "name": "vendor-opts",
+                                "data": "4491"
+                            },
+                            {
+                                "name": "tftp-servers",
+                                "space": "vendor-4491",
+                                "data": "3000:1::234"
+                            }
+                        ]
+                    },
+                    {
+                        "flex-id": "'somevalue'",
+                        "ip-addresses": ["2001:db8:1:0:cafe::2"]
+                    }
+                ]
+            }
+        ],
+        "loggers": [
+            {
+                "name": "kea-dhcp6",
+                "output_options": [
+                    {
+                        "output": "@localstatedir@/log/kea-dhcp6.log"
+                    }
+                ],
+                "severity": "INFO",
+                "debuglevel": 0
+            }
+        ]
+    }
+}
