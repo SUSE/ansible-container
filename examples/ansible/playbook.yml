@@ -1,7 +1,8 @@
 ---
-- hosts: alphost
+- name: Ensure Alpha Host Setup
+  hosts: alphost
   tasks:
-    - name: site | hello world
+    - name: Site | hello world
       ansible.builtin.command: echo "Hi! Ansible is working"
       changed_when: false
 
@@ -26,13 +27,13 @@
       become: true
       when: "'NetworkManager' in ansible_facts.packages"
 
-    - name: test ssh
+    - name: Test ssh
       ansible.builtin.wait_for:
         host: "{{ ansible_host }}"
         port: 22
       delegate_to: localhost
 
-    - name: test webpage access
+    - name: Test webpage access
       ansible.builtin.uri:
         url: https://www.example.com
         return_content: true

@@ -51,7 +51,7 @@
           ansible.builtin.systemd:
             name: neuvector.service
             state: started
-            enabled: yes
+            enabled: true
 
         - name: Print message connect to NeuVector
           ansible.builtin.debug:
@@ -68,7 +68,7 @@
           ansible.builtin.systemd:
             name: neuvector.service
             state: stopped
-            enabled: no
+            enabled: true
 
         - name: Execute nevector runlabel UNINSTALL
           ansible.builtin.command: >-

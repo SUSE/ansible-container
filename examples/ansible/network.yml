@@ -1,5 +1,6 @@
 ---
-- hosts: alphost
+- name: Configure Networking
+  hosts: alphost
   vars:
     static_nics:
       - name: enp2s0
@@ -59,7 +60,7 @@
       loop:
         - NetworkManager
 
-    - name: configure NIC
+    - name: Configure NIC
       community.general.nmcli:
         conn_name: '{{ item.name }}'
         ifname: '{{ item.ifname }}'
@@ -85,7 +86,7 @@
       loop: "{{ bonds }}"
 
 
-    - name: add NICs to bonds
+    - name: Add NICs to bonds
       community.general.nmcli:
         type: bond-slave
         conn_name: '{{ item.name }}'

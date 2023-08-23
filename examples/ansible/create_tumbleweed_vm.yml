@@ -24,7 +24,7 @@
       disk_size_gb: 30
     libvirt:
       images: /var/lib/libvirt/images
-      network: sle_network
+      network: default_network
 
   tasks:
 
@@ -39,7 +39,7 @@
         dest: "{{ libvirt.images }}"
         url: "{{ item.url }}"
         checksum: "{{ appliance.checksum }}:{{ item.url }}.{{ appliance.checksum }}"
-        mode: 0644
+        mode: '0644'
       loop:
         - name: "{{ appliance.image }}"
           url: "{{ appliance.mirror }}/{{ appliance.image }}.{{ appliance.format }}"
@@ -55,7 +55,7 @@
       register: virt_net_list_nets
 
     - name: Fail if required network is not available
-      fail:
+      ansible.builtin.fail:
         msg: "ERROR: required '{{ libvirt.network }}' missing!"
       when:
         - libvirt.network not in virt_net_list_nets.list_nets
@@ -87,9 +87,14 @@
           --vcpu {{ appliance.vcpus }}
           --memory {{ appliance.memory_mb }}
           --cloud-init
-          --disk size={{ appliance.disk_size_gb }},backing_store={{ libvirt.images }}/{{ appliance.image }}.{{ appliance.format }},backing_format={{ appliance.format }},bus=virtio,cache=none
+          --disk size={{ appliance.disk_size_gb }},
+          backing_store={{ libvirt.images }}/{{ appliance.image }}.{{ appliance.format }},
+          backing_format={{ appliance.format }},
+          bus=virtio,cache=none
           --graphics vnc,listen=0.0.0.0
       register: virt_install_vm
+      changed_when:
+        - "virt_install_vm.rc == 0"
       when:
         - ('tumbleweed' not in virt_list_vms.list_vms)
 
