@@ -24,7 +24,7 @@
       disk_size_gb: 30
     libvirt:
       images: /var/lib/libvirt/images
-      network: sle_network
+      network: default_network
 
   tasks:
 
@@ -39,7 +39,7 @@
         dest: "{{ libvirt.images }}"
         url: "{{ item.url }}"
         checksum: "{{ appliance.checksum }}:{{ item.url }}.{{ appliance.checksum }}"
-        mode: 0644
+        mode: '0644'
       loop:
         - name: "{{ appliance.image }}"
           url: "{{ appliance.mirror }}/{{ appliance.image }}.{{ appliance.format }}"
@@ -55,7 +55,7 @@
       register: virt_net_list_nets
 
     - name: Fail if required network is not available
-      fail:
+      ansible.builtin.fail:
         msg: "ERROR: required '{{ libvirt.network }}' missing!"
       when:
         - libvirt.network not in virt_net_list_nets.list_nets
@@ -69,7 +69,7 @@
       ansible.builtin.template:
         src: "config.ign.j2"
         dest: "{{ libvirt.images }}/{{ appliance.name }}.ign"
-        mode: 0644
+        mode: '0644'
 
     - name: Query list of libvirt VMs
       become: true
@@ -97,11 +97,17 @@
           --rng /dev/urandom
           --vcpu {{ appliance.vcpus }}
           --memory {{ appliance.memory_mb }}
-          --disk size={{ appliance.disk_size_gb }},backing_store={{ libvirt.images }}/{{ appliance.image }}.{{ appliance.format }},backing_format={{ appliance.format }},bus=virtio,cache=none
+          --disk size={{ appliance.disk_size_gb }},
+          backing_store={{ libvirt.images }}/{{ appliance.image }}.{{ appliance.format }},
+          backing_format={{ appliance.format }},
+          bus=virtio,
+          cache=none
           --graphics vnc,listen=0.0.0.0
           --sysinfo type=fwcfg,entry0.name="opt/com.coreos/config",entry0.file="{{ libvirt.images }}/{{ appliance.name }}.ign"
           --tpm backend.type=emulator,backend.version=2.0,model=tpm-tis
       register: virt_install_vm
+      changed_when:
+        - "virt_install_vm.rc == 0"
       when:
         - appliance.name not in virt_list_vms.list_vms
 
