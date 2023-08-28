@@ -1,0 +1,59 @@
+---
+# Ansible Playbook: Setup Cockpit Web server on ALP Dolomite
+# Description: This Ansible playbook automates the deployment of the Cockpit Web server on an ALP Dolomite host.
+# If 'extend_functionality' is set to 'true', it also installs 'cockpit-tukit' to enhance Cockpit's capabilities, with a system reboot recommended afterward.
+# The steps are based on: [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-cockpit-with-podman]
+# Administering SUSE ALP Dolomite using Cockpit Documentation: [https://documentation.suse.com/alp/dolomite/single-html/cockpit-alp-dolomite/]
+
+- name: Setup Cockpit Web server
+  hosts: alphost
+  become: true
+  vars:
+    workload:
+      extend_functionality: 'false'
+      name: cockpit-ws
+      image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/cockpit-ws:latest
+      service:
+        name: cockpit.service
+
+  tasks:
+    - name: Retrieve image for workload {{ workload.name }}
+      containers.podman.podman_image:
+        name: "{{ workload.image }}"
+        state: present
+      register: retrieve_workload_image
+
+    - name: Install Cockpit Web server container
+      ansible.builtin.command: >-
+        podman container runlabel install {{ workload.image }}
+      register: workload_runlabel_install
+      changed_when:
+        - ('already exist' not in workload_runlabel_install.stdout)
+
+    - name: Ensure service can be started for workload {{ workload.name }}
+      ansible.builtin.systemd_service:
+        name: "{{ workload.service.name }}"
+        state: "started"
+        enabled: true
+
+    - name: Inform user to access the Cockpit Web user interface
+      ansible.builtin.debug:
+        msg: >-
+          Cockpit Web UI is running on https://{{ ansible_default_ipv4.address }}:9090
+          Please accept the warning about the self-signed SSL certificate to access it.
+
+    - name: Install cockpit-tukit for software updates functionality
+      ansible.builtin.package:
+        name: cockpit-tukit
+        state: present
+      register: package_installed
+      when:
+        - workload.extend_functionality == 'true'
+      notify: Notify user about potential reboot
+
+  handlers:
+    - name: Notify user about potential reboot
+      ansible.builtin.debug:
+        msg: >-
+          The package cockpit-tukit was installed to extend Cockpit's functionality.
+          It's recommended to reboot the system for changes to take full effect.

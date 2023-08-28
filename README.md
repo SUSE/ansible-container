@@ -265,3 +265,23 @@ For configuration, the playbooks utilize sample files named kea-dhcp4.conf and k
 While these default configurations are suitable for many environments, you might have specific requirements or preferences for your setup. In such cases, you can modify these files in the /templates directory before running the playbook, allowing for a more tailored DHCP configuration.
 
 After deployment, the active Kea configuration files can be found in the /etc/kea directory. For a deep dive into configuring the Kea DHCP server, kindly refer to the official documentation available at https://kea.readthedocs.io/
+
+## Setup Cockpit Web Server on ALP Host
+
+The setup_cockpit.yml playbook automates the deployment of the Cockpit Web server on an ALP Dolomite host using a containerized approach with Podman.
+
+### Extend Cockpit's Capabilities:
+Set the extend_functionality variable to true to install cockpit-tukit and enhance Cockpit's capabilities. After installation, a system reboot is recommended.
+
+```shell
+$ cd /usr/local/share/ansible-container/examples/ansible
+$ ansible-playbook setup_cockpit.yml
+...
+TASK [Start Cockpit Web server using systemd] ***************************************************************************************************
+changed: [alphost]
+
+PLAY RECAP ***************************************************************************************************************************************
+alphost                    : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+```
+After running the playbook, access the Cockpit Web interface at https://HOSTNAME_OR_IP_OF_ALP_HOST:9090. Accept the certificate warning due to the self-signed certificate.
