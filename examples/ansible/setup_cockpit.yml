@@ -13,15 +13,12 @@
       extend_functionality: 'false'
       name: cockpit-ws
       image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/cockpit-ws:latest
-      service:
-        name: cockpit.service
 
   tasks:
     - name: Retrieve image for workload {{ workload.name }}
       containers.podman.podman_image:
         name: "{{ workload.image }}"
         state: present
-      register: retrieve_workload_image
 
     - name: Install Cockpit Web server container
       ansible.builtin.command: >-
@@ -32,7 +29,7 @@
 
     - name: Ensure service can be started for workload {{ workload.name }}
       ansible.builtin.systemd_service:
-        name: "{{ workload.service.name }}"
+        name: "cockpit.service"
         state: "started"
         enabled: true
 
@@ -46,7 +43,6 @@
       ansible.builtin.package:
         name: cockpit-tukit
         state: present
-      register: package_installed
       when:
         - workload.extend_functionality == 'true'
       notify: Notify user about potential reboot
