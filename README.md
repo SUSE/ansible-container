@@ -300,5 +300,3 @@ PLAY RECAP *********************************************************************
 alphost                    : ok=8    changed=5    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
 
 ```
-
-NOTE: The playbook will automatically verify and remove any existing firewalld installation on your SUSE ALP Dolomite host, it will then prompt a request for an system reboot. Re-run the playbook after the reboot has completed successfully to finish the setup.
