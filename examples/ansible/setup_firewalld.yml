@@ -18,24 +18,14 @@
       image: registry.opensuse.org/suse/alp/workloads/tumbleweed_images/suse/alp/workloads/firewalld
 
   tasks:
-    - name: Ensure firewalld is not installed in the host system
-      ansible.builtin.package:
-        name: "{{ workload.name }}"
-        state: absent
-      register: remove_firewalld_result
-
-    - name: Handle reboot, if needed
-      when: remove_firewalld_result is changed
-      block:
-        - name: Print message requesting immediate reboot
-          ansible.builtin.debug:
-            msg: >-
-               The 'firewalld' package has been uninstalled via transactional-update to ensure compatibility with the intended containerized workload.
-
-        - name: Request immediate reboot  # noqa no-handler
-          ansible.builtin.fail:
-            msg: "Reboot required"
-
+- name: Check if firewalld is installed locally
+  stat:
+    path: "rpm -q firewalld"
+  register: local_firewalld
+- name: Fail if firewalld is installed locally
+  ansible.builtin.fail:
+    msg: "Firewalld is installed locally. Please remove it before installing this container."
+  when: local_firewalld.rc != 0
     - name: Deploy firewalld using Podman
       block:
         - name: Retrieve image for workload
