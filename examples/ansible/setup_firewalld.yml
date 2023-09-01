@@ -1,0 +1,59 @@
+---
+# Ansible Playbook: Setup firewalld using Podman on SUSE ALP Dolomite
+# Description: This Ansible playbook automates the deployment of the firewalld using Podman on SUSE ALP Dolomite.
+# The deployment adds firewall capability to ALP Dolomite to define the trust level of network connections or interfaces.
+# Key Considerations:
+# - The container image utilizes the system's dbus instance. Thus, dbus and polkit configuration files must be installed initially.
+# - The systemd service and its configuration file allow the container to start and stop via systemd with Podman as the container manager.
+# - The `/usr/local/bin/firewall-cmd` serves as a wrapper to invoke firewall-cmd inside the container, with both Docker and Podman being supported.
+# Based on: "Running firewalld using Podman on SUSE ALP Dolomite". Documentation available at:
+# [https://documentation.suse.com/alp/dolomite/single-html/firewalld-podman-alp-dolomite/]
+
+- name: Setup firewalld using Podman on SUSE ALP Dolomite
+  hosts: alphost
+  become: true
+  vars:
+    workload:
+      name: firewalld
+      image: registry.opensuse.org/suse/alp/workloads/tumbleweed_images/suse/alp/workloads/firewalld
+
+  tasks:
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+        manager: "rpm"
+
+    - name: Fail if firewalld is installed locally
+      ansible.builtin.fail:
+        msg: "Firewalld is installed locally. Please remove it before installing this container."
+      when: "'firewalld' in ansible_facts.packages"
+
+    - name: Retrieve image for workload
+      containers.podman.podman_image:
+        name: "{{ workload.image }}"
+        state: present
+
+    - name: Initialize the environment
+      ansible.builtin.command: >-
+        podman container runlabel install "{{ workload.image }}"
+      register: workload_runlabel_install
+      changed_when:
+        - "('already exist' not in workload_runlabel_install.stdout)"
+
+    - name: Ensure polkit daemon is restarted (if necessary)
+      ansible.builtin.service:
+        name: polkit
+        state: restarted
+      when:
+        - "'etc/polkit-1/actions/org.fedoraproject.FirewallD1.policy' in workload_runlabel_install.stdout"
+
+    - name: Start and enable firewalld using systemd
+      ansible.builtin.service:
+        name: "{{ workload.name }}"
+        state: started
+        enabled: true
+
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: >-
+          "Firewalld workload setup complete."
+          "Use the /usr/local/bin/firewall-cmd wrapper to manage the firewalld instance."

@@ -285,3 +285,18 @@ alphost                    : ok=5    changed=4    unreachable=0    failed=0    s
 
 ```
 After running the playbook, access the Cockpit Web interface at https://HOSTNAME_OR_IP_OF_ALP_HOST:9090. Accept the certificate warning due to the self-signed certificate.
+
+## Deploy Firewalld on ALP Host
+
+Using the setup_firewalld.yml Ansible playbook, deploy Firewalld via Podman on SUSE ALP Dolomite to define network trust levels. Ensure dbus and polkit configurations are set beforehand. Use the /usr/local/bin/firewall-cmd wrapper to manage the firewalld instance.
+
+For an in-depth understanding, refer to the [Firewalld-Podman-Dolomite Documentation](https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-firewalld-with-podman).
+
+```shell
+$ cd /usr/local/share/ansible-container/examples/ansible
+$ ansible-playbook setup_firewalld.yml
+...
+PLAY RECAP ***************************************************************************************************************************************
+alphost                    : ok=8    changed=5    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
+
+```
