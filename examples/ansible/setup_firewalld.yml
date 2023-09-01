@@ -46,7 +46,7 @@
       when:
         - "'etc/polkit-1/actions/org.fedoraproject.FirewallD1.policy' in workload_runlabel_install.stdout"
 
-    - name: Start firewalld using systemd
+    - name: Start and enable firewalld using systemd
       ansible.builtin.service:
         name: "{{ workload.name }}"
         state: started
