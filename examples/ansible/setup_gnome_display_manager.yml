@@ -65,6 +65,7 @@
     - name: Reload systemd daemon
       ansible.builtin.systemd:
         daemon_reload: true
+      when: workload_runlabel_install.stdout.changed
 
     - name: Reload dbus service
       ansible.builtin.systemd:
