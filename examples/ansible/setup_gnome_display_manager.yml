@@ -20,7 +20,7 @@
   tasks:
     - name: Install required packages, if any, for workload {{ workload.name }}
       ansible.builtin.package:
-        name: "{{ workload.required_pkgs }}"
+        name: ['accountsservice', 'systemd-experimental', 'python3-selinux']
         state: present
       register: required_pkgs_install
       when:
