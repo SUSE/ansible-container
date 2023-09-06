@@ -12,46 +12,16 @@
     workload:
       name: gdm
       image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/gdm:latest
-      required_pkgs:
-        - accountsservice
-        - systemd-experimental
-        - python3-selinux
 
   tasks:
     - name: Install required packages, if any, for workload {{ workload.name }}
       ansible.builtin.package:
         name: ['accountsservice', 'systemd-experimental', 'python3-selinux']
         state: present
-      notify: reboot
+      notify: Reboot
+
     - name: Reboot right now if necessary
-      meta: flush_handlers
-            
-handlers:
-  - name: reboot
-    reboot:
-      reboot_timeout: 600
-      post_reboot_delay: 60
-      when:
-        - ((workload.required_pkgs | default([])) | length) > 0
-
-    - name: Handle reboot, if needed
-      when:
-        - required_pkgs_install is changed
-      block:
-
-        - name: Print message requesting immediate reboot
-          ansible.builtin.debug:
-            msg: >-
-              Required system packages have been installed via
-              transactional-update to support workload
-              {{ workload.name }}.
-              An immediate reboot is required to activate these
-              packages before proceding. Once reboot has completed
-              please re-run this playbook.
-
-        - name: Request immediate reboot  # noqa no-handler
-          ansible.builtin.fail:
-            msg: "Reboot required"
+      ansible.builtin.meta: flush_handlers
 
     - name: Set SELinux to permissive mode
       ansible.posix.selinux:
@@ -73,7 +43,8 @@ handlers:
     - name: Reload systemd daemon
       ansible.builtin.systemd:
         daemon_reload: true
-      when: workload_runlabel_install.stdout.changed
+      when:
+        - workload_runlabel_install.stdout.changed
 
     - name: Reload dbus service
       ansible.builtin.systemd:
@@ -96,3 +67,9 @@ handlers:
       ansible.builtin.debug:
         msg: >-
           GNOME Display Manager (GDM) has been successfully deployed and started on ALP Dolomite. After you log in, a basic GNOME environment opens.
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        post_reboot_delay: 60
