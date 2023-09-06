@@ -22,7 +22,15 @@
       ansible.builtin.package:
         name: ['accountsservice', 'systemd-experimental', 'python3-selinux']
         state: present
-      register: required_pkgs_install
+      notify: reboot
+    - name: Reboot right now if necessary
+      meta: flush_handlers
+            
+handlers:
+  - name: reboot
+    reboot:
+      reboot_timeout: 600
+      post_reboot_delay: 60
       when:
         - ((workload.required_pkgs | default([])) | length) > 0
 
