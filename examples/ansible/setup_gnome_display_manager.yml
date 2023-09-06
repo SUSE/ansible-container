@@ -83,7 +83,8 @@ handlers:
     - name: Restart accounts-daemon service
       ansible.builtin.systemd:
         name: accounts-daemon
-        state: restarted
+        state: started
+        enabled: true
 
     - name: Start service for workload {{ workload.name }}
       ansible.builtin.systemd:
