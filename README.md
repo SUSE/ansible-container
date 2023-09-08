@@ -300,3 +300,18 @@ PLAY RECAP *********************************************************************
 alphost                    : ok=8    changed=5    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
 
 ```
+
+## Deploy GNOME Display Manager on ALP Host
+
+This playbook simplifies the deployment and running of the GNOME Display Manager (GDM) on SUSE ALP Dolomite. Leveraging Podman, it allows users to run GDM within a containerized environment. The playbook will install necessary packages, configure SELinux, retrieve and set up the necessary container images, manage system services related to GDM, and start GDM as a service.
+
+For an in-depth understanding, refer to the [GDM-Dolomite Documentation](https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-gdm-with-podman)
+
+```shell
+$ cd /usr/local/share/ansible-container/examples/ansible
+$ ansible-playbook setup_gnome_display_manager.yml
+...
+PLAY RECAP ***************************************************************************************************************************************
+alphost                    : ok=10    changed=6    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
+
+```

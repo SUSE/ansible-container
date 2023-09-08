@@ -1,0 +1,75 @@
+---
+# Ansible Playbook: Deploy and run GNOME Display Manager on ALP Dolomite
+# Description: This Ansible playbook automates the deployment and operation of the GNOME Display Manager (GDM) on SUSE ALP Dolomite using Podman.
+# This deployment allows users to run GDM within a container environment, providing a basic GNOME desktop experience.
+# Based on: "Running the GNOME Display Manager workload using Podman on SUSE ALP Dolomite".
+# Documentation reference: [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-gdm-with-podman]
+
+- name: Deploy and run GNOME Display Manager on ALP Dolomite
+  hosts: alphost
+  become: true
+  vars:
+    workload:
+      name: gdm
+      image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/gdm:latest
+
+  tasks:
+    - name: Install required packages, if any, for workload {{ workload.name }}
+      ansible.builtin.package:
+        name: ['accountsservice', 'systemd-experimental', 'python3-selinux']
+        state: present
+      notify: Reboot
+
+    - name: Reboot right now if necessary
+      ansible.builtin.meta: flush_handlers
+
+    - name: Set SELinux to permissive mode
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+
+    - name: Retrieve image for workload {{ workload.name }}
+      containers.podman.podman_image:
+        name: "{{ workload.image }}"
+        state: present
+
+    - name: Apply container runlabel install for workload {{ workload.name }}
+      ansible.builtin.command: >-
+        podman container runlabel install {{ workload.image }}
+      register: workload_runlabel_install
+      changed_when:
+        - ('already exist' not in workload_runlabel_install.stdout)
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: true
+      when:
+        - workload_runlabel_install.stdout.changed
+
+    - name: Reload dbus service
+      ansible.builtin.systemd:
+        name: dbus
+        state: reloaded
+
+    - name: Restart accounts-daemon service
+      ansible.builtin.systemd:
+        name: accounts-daemon
+        state: started
+        enabled: true
+
+    - name: Start service for workload {{ workload.name }}
+      ansible.builtin.systemd:
+        name: gdm.service
+        state: started
+        enabled: true
+
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: >-
+          GNOME Display Manager (GDM) has been successfully deployed and started on ALP Dolomite. After you log in, a basic GNOME environment opens.
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        post_reboot_delay: 60
