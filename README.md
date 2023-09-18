@@ -223,9 +223,7 @@ alphost                    : ok=15   changed=4    unreachable=0    failed=0    s
 
 ## Setup NeuVector on ALP host
 
-The setup_neuvector.yml playbook can be used to manage the NeuVector workload on an ALP host. It supports two operations: setup and removal of NeuVector. The operation is determined by the 'neuvector_state' variable, which can be set to 'present' or 'absent'.
-
-To try out this example playbook, you can change directory to the /usr/local/share/ansible-container/examples/ansible directory and run the following command:
+The setup_neuvector.yml playbook can be used to deploy the NeuVector workload on an ALP host.
 
 ```shell
 $ cd /usr/local/share/ansible-container/examples/ansible
@@ -237,7 +235,7 @@ ok: [alphost] => {
 }
 ...
 PLAY RECAP *****************************************************************************************************************************
-alphost                    : ok=8   changed=4    unreachable=0    failed=0    skipped=3    rescued=0    ignored=0
+alphost                    : ok=8   changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
 ```
 
@@ -270,9 +268,6 @@ After deployment, the active Kea configuration files can be found in the /etc/ke
 
 The setup_cockpit.yml playbook automates the deployment of the Cockpit Web server on an ALP Dolomite host using a containerized approach with Podman.
 
-### Extend Cockpit's Capabilities:
-Set the extend_functionality variable to true to install cockpit-tukit and enhance Cockpit's capabilities. After installation, a system reboot is recommended.
-
 ```shell
 $ cd /usr/local/share/ansible-container/examples/ansible
 $ ansible-playbook setup_cockpit.yml
@@ -281,7 +276,7 @@ TASK [Start Cockpit Web server using systemd] **********************************
 changed: [alphost]
 
 PLAY RECAP ***************************************************************************************************************************************
-alphost                    : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+alphost                    : ok=7    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
 ```
 After running the playbook, access the Cockpit Web interface at https://HOSTNAME_OR_IP_OF_ALP_HOST:9090. Accept the certificate warning due to the self-signed certificate.

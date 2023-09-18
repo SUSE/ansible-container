@@ -37,14 +37,12 @@
       ansible.builtin.command: >-
         podman container runlabel install {{ workload.image }}
       register: workload_runlabel_install
+      notify: Reload systemd daemon
       changed_when:
         - ('already exist' not in workload_runlabel_install.stdout)
 
-    - name: Reload systemd daemon
-      ansible.builtin.systemd:
-        daemon_reload: true
-      when:
-        - workload_runlabel_install.stdout.changed
+    - name: Reload systemd daemon now
+      ansible.builtin.meta: flush_handlers
 
     - name: Reload dbus service
       ansible.builtin.systemd:
@@ -73,3 +71,7 @@
       ansible.builtin.reboot:
         reboot_timeout: 600
         post_reboot_delay: 60
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: true
