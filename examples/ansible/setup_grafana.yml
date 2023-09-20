@@ -7,40 +7,26 @@
 - name: Setup ALP system for Grafana
   hosts: alphost
   become: true
-  vars:
-    workload:
-      name: grafana
-      image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/grafana:latest
 
   tasks:
     - name: Ensure Grafana image is present
       containers.podman.podman_image:
-        name: "{{ workload.image }}"
+        name: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/grafana:latest
         state: present
 
-    - name: Retrieve image for workload {{ workload.name }}
+    - name: Retrieve image for Grafana
       ansible.builtin.command: >-
-        podman container runlabel install {{ workload.image }}
+        podman container runlabel install registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/grafana:latest
       register: workload_runlabel_install
       changed_when:
         - ('already exist' not in workload_runlabel_install.stdout)
 
-    - name: Create the Grafana container from the downloaded image
-      ansible.builtin.command: >-
-        /usr/local/bin/grafana-container-manage.sh create
-      register: grafana_container_creation
-      changed_when:
-        - ('using /etc/grafana-container.conf as configuration file' in grafana_container_creation.stdout)
+    - name: Start and enable Grafana using systemd
+      ansible.builtin.service:
+        name: grafana
+        state: started
+        enabled: true
 
-    - name: Start the Grafana container
-      ansible.builtin.command: >-
-        /usr/local/bin/grafana-container-manage.sh start
-      register: grafana_container_start
-      notify: Display Grafana access information
-      changed_when:
-        - ('Up Less than a second' in grafana_container_start.stdout)
-
-  handlers:
     - name: Display Grafana access information
       ansible.builtin.debug:
         msg:
