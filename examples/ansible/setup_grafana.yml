@@ -13,12 +13,12 @@
       image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/grafana:latest
 
   tasks:
-    - name: Ensure Grafana image is present
+    - name: Retrieve image for Grafana
       containers.podman.podman_image:
         name: "{{ workload.image }}"
         state: present
 
-    - name: Retrieve image for Grafana
+    - name: Initialize the environment
       ansible.builtin.command: >-
         podman container runlabel install "{{ workload.image }}"
       register: workload_runlabel_install
