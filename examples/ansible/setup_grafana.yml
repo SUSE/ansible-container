@@ -7,23 +7,27 @@
 - name: Setup ALP system for Grafana
   hosts: alphost
   become: true
+  vars:
+    workload:
+      name: grafana
+      image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/grafana:latest
 
   tasks:
     - name: Ensure Grafana image is present
       containers.podman.podman_image:
-        name: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/grafana:latest
+        name: "{{ workload.image }}"
         state: present
 
     - name: Retrieve image for Grafana
       ansible.builtin.command: >-
-        podman container runlabel install registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/grafana:latest
+        podman container runlabel install "{{ workload.image }}"
       register: workload_runlabel_install
       changed_when:
         - ('already exist' not in workload_runlabel_install.stdout)
 
     - name: Start and enable Grafana using systemd
       ansible.builtin.service:
-        name: grafana
+        name: "{{ workload.name }}"
         state: started
         enabled: true
 
