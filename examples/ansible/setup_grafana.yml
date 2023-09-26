@@ -1,0 +1,39 @@
+---
+# Ansible Playbook: Setup Grafana on SUSE ALP Dolomite
+# Description: This Ansible playbook automates the deployment of Grafana on a SUSE ALP Dolomite host.
+# The steps include fetching the Grafana image, setting up the Grafana container, and providing access information.
+# The steps are based on https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-grafana-with-podman
+
+- name: Setup ALP system for Grafana
+  hosts: alphost
+  become: true
+  vars:
+    workload:
+      name: grafana
+      image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/grafana:latest
+
+  tasks:
+    - name: Retrieve image for Grafana
+      containers.podman.podman_image:
+        name: "{{ workload.image }}"
+        state: present
+
+    - name: Initialize the environment
+      ansible.builtin.command: >-
+        podman container runlabel install "{{ workload.image }}"
+      register: workload_runlabel_install
+      changed_when:
+        - ('already exist' not in workload_runlabel_install.stdout)
+
+    - name: Start and enable Grafana using systemd
+      ansible.builtin.service:
+        name: "{{ workload.name }}"
+        state: started
+        enabled: true
+
+    - name: Display Grafana access information
+      ansible.builtin.debug:
+        msg:
+          - "Please open the Grafana UI at http://{{ ansible_default_ipv4.address }}:3000."
+          - "Log in to Grafana. The default user name and password are both set to 'admin'. After logging in, enter a new password."
+          - "Follow the on-screen prompts to complete the configuration."

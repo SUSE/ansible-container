@@ -310,3 +310,19 @@ PLAY RECAP *********************************************************************
 alphost                    : ok=10    changed=6    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
 
 ```
+
+## Deploy Grafana on SUSE ALP Host
+
+Utilizing the setup_grafana.yml Ansible playbook, automate the deployment of Grafana on a SUSE ALP Dolomite host. This playbook leverages Podman for deployment of Grafana.
+
+For an in-depth understanding, refer to the [Grafana-Dolomite Documentation](https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-grafana-with-podman).
+
+```shell
+$ cd /usr/local/share/ansible-container/examples/ansible
+$ ansible-playbook setup_grafana.yml
+...
+PLAY RECAP ***************************************************************************************************************************************
+alphost                    : ok=6    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+```
+Upon successful execution of the playbook, access the Grafana interface at http://HOSTNAME_OR_IP_OF_ALP_HOST:3000. When logging in for the first time, use the default credentials admin for both the username and password. Subsequently, set a new password as prompted.
