@@ -3,7 +3,7 @@
 # Description: This Ansible playbook automates the setup of a SUSE ALP Dolomite host as a libvirt host.
 # The steps encompass installing necessary packages for the workload, ensuring system readiness through reboots if necessary,
 # fetching the required images for kvm-server and kvm-client from the specified registry, and installing tools for both kvm-server
-# and kvm-client. Subsequent tasks ensure that certain services are stopped, started, or enabled as per the requirements.
+# and kvm-client. Subsequent tasks ensure that needed services are stopped, started, or enabled as per the requirements.
 # Documentation reference: [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-kvm-with-podman]
 # Creating customized VMs using virt-scenario: [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/concept-virt-scenario.html]
 
