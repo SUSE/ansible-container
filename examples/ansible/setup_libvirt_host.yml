@@ -10,64 +10,87 @@
 - name: Setup ALP system as a libvirt host
   hosts: alphost
   become: true
+  vars:
+    workload:
+      name: kvm
+      service: kvm-server-container
+      images:
+        kvmserver: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm-server:latest
+        kvmclient: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm-client:latest
+      required_pkgs:
+        - kernel-default
+        - "-kernel-default-base"
+        - netcat-openbsd
+        - python3-libvirt-python
+        - python3-lxml
+        - swtpm
+      libvirtd_services:
+        - libvirtd.service
+        - libvirtd-ro.socket
+        - libvirtd-admin.socket
+        - libvirtd-tcp.socket
+        - libvirtd-tls.socket
+      log_and_lock_drivers:
+        - container-virtlogd.service
+        - virtlogd.socket
+        - virtlogd-admin.socket
+        - container-virtlockd.service
+        - virtlockd.socket
+        - virtlockd-admin.socket
+      other_drivers:
+        - qemu
+        - network
+        - nodedev
+        - nwfilter
+        - proxy
+        - secret
+        - storage
 
   tasks:
     - name: Install required packages, if any, for workload
       ansible.builtin.package:
         name: "{{ item }}"
         state: present
+      loop: "{{ workload.required_pkgs }}"
       notify: Reboot
-      loop:
-        - kernel-default
-        - netcat-openbsd
-        - python3-libvirt-python
-        - python3-lxml
-        - swtpm
 
     - name: Reboot right now if necessary
       ansible.builtin.meta: flush_handlers
 
     - name: Retrieve images for kvm-server and kvm-client
       containers.podman.podman_image:
-        name: "{{ item }}"
+        name: "{{ item.value }}"
         state: present
-      loop:
-        - registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm-server:latest
-        - registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm-client:latest
+      loop: "{{ workload.images | dict2items }}"
 
-    - name: Install tools for kvm-server
+    - name: Install tools for kvmserver
       ansible.builtin.command: >-
-        podman container runlabel install registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm-server:latest
+        podman container runlabel install "{{ workload.images.kvmserver }}"
       register: workload_runlabel_install
       changed_when:
         - ('already exist' not in workload_runlabel_install.stdout)
 
-    - name: Install tools for kvm-client
+    - name: Install tools for kvmclient
       ansible.builtin.command: >-
-        podman container runlabel install registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm-client:latest
+        podman container runlabel install "{{ workload.images.kvmclient }}"
       register: workload_runlabel_install
       changed_when:
         - ('already exist' not in workload_runlabel_install.stdout)
 
     - name: Ensure libvirtd is stopped and disabled
-      ansible.builtin.service:
+      ansible.builtin.systemd_service:
         name: "{{ item }}"
         state: stopped
         enabled: false
-      loop:
-        - libvirtd.service
-        - libvirtd-ro.socket
-        - libvirtd-admin.socket
-        - libvirtd-tcp.socket
-        - libvirtd-tls.socket
+      loop: "{{ workload.libvirtd_services }}"
       register: service_result
       failed_when: >
         service_result is failed and
         ("Could not find the requested service" not in service_result.msg)
 
     - name: Ensure kvm-server-container.service is started and enabled
-      ansible.builtin.service:
-        name: kvm-server-container.service
+      ansible.builtin.systemd_service:
+        name: "{{ workload.service }}"
         state: started
         enabled: true
       notify: Reload systemd
@@ -76,31 +99,18 @@
       ansible.builtin.meta: flush_handlers
 
     - name: Enable and start log and lock drivers
-      ansible.builtin.service:
+      ansible.builtin.systemd_service:
         name: "{{ item }}"
         state: started
         enabled: true
-      loop:
-        - container-virtlogd.service
-        - virtlogd.socket
-        - virtlogd-admin.socket
-        - container-virtlockd.service
-        - virtlockd.socket
-        - virtlockd-admin.socket
+      loop: "{{ workload.log_and_lock_drivers }}"
 
     - name: Enable and start other drivers
-      ansible.builtin.service:
+      ansible.builtin.systemd_service:
         name: "container-virt{{ item }}d.service"
         state: started
         enabled: true
-      loop:
-        - qemu
-        - network
-        - nodedev
-        - nwfilter
-        - proxy
-        - secret
-        - storage
+      loop: "{{ workload.other_drivers }}"
 
     - name: Display completion message
       ansible.builtin.debug:

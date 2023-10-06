@@ -120,7 +120,7 @@ play books that require system privilege would then need to use "become: true"
 SSH access can be validated with `ssh localhost`.
 
 
-# Examples
+# Ansible Playbooks List
 
 See the `examples/ansible` for example Ansible playbooks.
 
@@ -128,12 +128,14 @@ On an ALP system where the Ansible workload container has been installed,
 using the `install` runlabel, the examples will be available under the
 `/usr/local/share/ansible-container/examples/ansible` directory.
 
-There are fourteen playbooks currently under /usr/local/share/ansible-container/examples/ansible
+There are twelve playbooks currently under /usr/local/share/ansible-container/examples/ansible
+
+## Example Playbooks
 * playbook.yml
 * network.yml
+
+## Workload Setup Playbooks
 * setup_libvirt_host.yml
-* create_alp_vm.yml
-* create_tumbleweed_vm.yml
 * setup_cockpit.yml
 * setup_firewalld.yml
 * setup_gnome_display_manager.yml
@@ -141,6 +143,10 @@ There are fourteen playbooks currently under /usr/local/share/ansible-container/
 * setup_kea_dhcpv6_server.yml
 * setup_grafana.yml
 * setup_neuvector.yml
+
+## VM Creation Playbooks
+* create_alp_vm.yml
+* create_tumbleweed_vm.yml
 
 ## Simple Ansible test (playbook.yml)
 The 'playbook.yml' tests several common ansible operations, such as gathering facts and testing for installed packages.
