@@ -1,19 +1,22 @@
 ---
-
-#
-# A example playbook showing how the setup an ALP system as a libvirt host.
-#
-
+# Ansible Playbook: Setup SUSE ALP Dolomite as a libvirt Host
+# Description: This Ansible playbook automates the setup of a SUSE ALP Dolomite host as a libvirt host.
+# The steps encompass installing necessary packages for the workload, ensuring system readiness through reboots if necessary,
+# fetching the required images for kvm-server and kvm-client from the specified registry, and installing tools for both kvm-server
+# and kvm-client. Subsequent tasks ensure that needed services are stopped, started, or enabled as per the requirements.
+# Documentation reference: [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/available-alp-workloads.html#task-run-kvm-with-podman]
+# Creating customized VMs using virt-scenario: [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/concept-virt-scenario.html]
 
 - name: Setup ALP system as a libvirt host
   hosts: alphost
+  become: true
   vars:
     workload:
-      name: libvirtd
-      image: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm:latest
-      labels:
-        install: install
-        uninstall: uninstall
+      name: kvm
+      service: kvm-server-container
+      images:
+        kvmserver: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm-server:latest
+        kvmclient: registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/kvm-client:latest
       required_pkgs:
         - kernel-default
         - "-kernel-default-base"
@@ -21,109 +24,107 @@
         - python3-libvirt-python
         - python3-lxml
         - swtpm
-      service:
-        name: libvirtd
-        wait_for:
-          path: /var/run/libvirt/libvirt-sock
+      libvirtd_services:
+        - libvirtd.service
+        - libvirtd-ro.socket
+        - libvirtd-admin.socket
+        - libvirtd-tcp.socket
+        - libvirtd-tls.socket
+      log_and_lock_drivers:
+        - container-virtlogd.service
+        - virtlogd.socket
+        - virtlogd-admin.socket
+        - container-virtlockd.service
+        - virtlockd.socket
+        - virtlockd-admin.socket
+      other_drivers:
+        - qemu
+        - network
+        - nodedev
+        - nwfilter
+        - proxy
+        - secret
+        - storage
 
   tasks:
-
-    - name: Retrieve image for workload {{ workload.name }}
-      become: true
-      containers.podman.podman_image:
-        name: "{{ workload.image }}"
+    - name: Install required packages, if any, for workload
+      ansible.builtin.package:
+        name: "{{ item }}"
         state: present
-      register: retrieve_workload_image
+      loop: "{{ workload.required_pkgs }}"
+      notify: Reboot
 
-    - name: Install tools for workload {{ workload.name }}
-      become: true
+    - name: Reboot right now if necessary
+      ansible.builtin.meta: flush_handlers
+
+    - name: Retrieve images for kvm-server and kvm-client
+      containers.podman.podman_image:
+        name: "{{ item.value }}"
+        state: present
+      loop: "{{ workload.images | dict2items }}"
+
+    - name: Install tools for kvmserver
       ansible.builtin.command: >-
-        podman container runlabel {{ workload.labels.install }} {{ workload.image }}
+        podman container runlabel install "{{ workload.images.kvmserver }}"
       register: workload_runlabel_install
       changed_when:
         - ('already exist' not in workload_runlabel_install.stdout)
 
-    - name: Install required packages, if any, for workload {{ workload.name }}
-      become: true
-      ansible.builtin.package:
-        name: "{{ workload.required_pkgs }}"
-        state: present
-      register: required_pkgs_install
-      when:
-        - ((workload.required_pkgs | default([])) | length) > 0
+    - name: Install tools for kvmclient
+      ansible.builtin.command: >-
+        podman container runlabel install "{{ workload.images.kvmclient }}"
+      register: workload_runlabel_install
+      changed_when:
+        - ('already exist' not in workload_runlabel_install.stdout)
 
-    - name: Handle reboot, if needed
-      when:
-        - required_pkgs_install is changed
-      block:
+    - name: Ensure libvirtd is stopped and disabled
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop: "{{ workload.libvirtd_services }}"
+      register: service_result
+      failed_when: >
+        service_result is failed and
+        ("Could not find the requested service" not in service_result.msg)
 
-        - name: Print message requesting immediate reboot
-          ansible.builtin.debug:
-            msg: >-
-              Required system packages have been installed via
-              transactional-update to support workload
-              {{ workload.name }}.
-              An immediate reboot is required to activate these
-              packages before proceding. Once reboot has completed
-              please re-run this playbook.
+    - name: Ensure kvm-server-container.service is started and enabled
+      ansible.builtin.systemd_service:
+        name: "{{ workload.service }}"
+        state: started
+        enabled: true
+      notify: Reload systemd
 
-        - name: Request immediate reboot  # noqa no-handler
-          ansible.builtin.fail:
-            msg: "Reboot required"
+    - name: Reload systemd right now if necessary
+      ansible.builtin.meta: flush_handlers
 
-    - name: Setup service for workload {{ workload.name }}
-      when:
-        - workload.service is defined
-      block:
+    - name: Enable and start log and lock drivers
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop: "{{ workload.log_and_lock_drivers }}"
 
-        - name: Ensure service can be started for workload {{ workload.name }}
-          become: true
-          ansible.builtin.systemd_service:
-            name: "{{ workload.service.name }}"
-            state: "started"
-          register: workload_service_start
+    - name: Enable and start other drivers
+      ansible.builtin.systemd_service:
+        name: "container-virt{{ item }}d.service"
+        state: started
+        enabled: true
+      loop: "{{ workload.other_drivers }}"
 
-        - name: Enable service to start on reboot for workload {{ workload.name }}
-          become: true
-          ansible.builtin.systemd_service:
-            name: "{{ workload.service.name }}"
-            enabled: true
-          when:
-            - workload_service_start is success
-
-        - name: Wait for service to be ready for workload {{ workload.name }}
-          when:
-            - workload.service.wait_for is defined
-          block:
-
-            - name: Check service path for workload {{ workload.name }}
-              ansible.builtin.wait_for:
-                path: "{{ workload.service.wait_for.path }}"
-              when:
-                - workload.service.wait_for.path is defined
-
-            - name: Check service port for workload {{ workload.name }}
-              ansible.builtin.wait_for:
-                port: "{{ workload.service.wait_for.port }}"
-              when:
-                - workload.service.wait_for.port is defined
-
-#
-# Verify basic operation of the Libvirt service
-#
-
-- name: Verify that Libvirt is operational
-  hosts: alphost
-  tasks:
-
-    - name: Query running Libvirt VMs
-      become: true
-      community.libvirt.virt:
-        command: list_vms
-      register: virt_list_vms
-
-    - name: Report running Libvirt VMs, if any
+    - name: Display completion message
       ansible.builtin.debug:
-        msg: "Running VMs: {{ virt_list_vms.list_vms | join(', ') }}"
-      when:
-        - ((virt_list_vms.list_vms | default([])) | length) > 0
+        msg: >-
+          ALP system setup as a libvirt host on alptestvm completed
+          successfully. All necessary components are installed and
+          configured for managing virtual machines.
+
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        post_reboot_delay: 60
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
