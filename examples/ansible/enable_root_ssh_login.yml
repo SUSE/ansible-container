@@ -1,0 +1,42 @@
+# Ansible Playbook: Enable Root Login via SSH on ALP Dolomite
+# Description: This playbook automates the process of enabling root login via SSH on ALP Dolomite.
+# By default, ALP Dolomite does not permit root login via SSH for security reasons. This playbook
+# provides a method to override this default setting, allowing root access over SSH.
+# Documentation Reference:
+# "2.9.3 Enabling root login via SSH" section in the ALP Dolomite documentation.
+# [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/concept-alp-deployment.html#alp-post-deploy-enable-root-ssh-login]
+---
+- name: Enable Root Login via SSH on ALP Dolomite
+  hosts: alphost
+  become: true
+  vars:
+    package_name: openssh-server-config-rootlogin
+    config_file: /etc/sshd/sshd_config.d
+
+  tasks:
+    - name: Install package "{{ package_name }}"
+      ansible.builtin.package:
+        name: "{{ package_name }}"
+        state: present
+
+    - name: Ensure sshd_config.d directory exists
+      ansible.builtin.file:
+        path: "{{ config_file }}"
+        state: directory
+        mode: "0755"
+
+    - name: Enable root login in SSH config
+      ansible.builtin.lineinfile:
+        path: "{{ config_file }}/root_login_config"
+        line: "PermitRootLogin yes"
+        create: true
+        mode: "0644"
+
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: "Root login has been enabled. The system will now reboot to apply the changes."
+
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        post_reboot_delay: 60
