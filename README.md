@@ -144,6 +144,7 @@ There are twelve playbooks currently under /usr/local/share/ansible-container/ex
 * setup_grafana.yml
 * setup_neuvector.yml
 * setup_keylime.yml
+* enable_root_ssh_login.yml
 
 ## VM Creation Playbooks
 * create_alp_vm.yml
@@ -351,5 +352,18 @@ $ ansible-playbook setup_keylime.yml
 ...
 PLAY RECAP ***************************************************************************************************************************************
 alphost                    : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+```
+
+## Enable Root Login via SSH on ALP Host
+
+This playbook automates the process of enabling root login via SSH on ALP Dolomite. By default, ALP Dolomite does not permit root login via SSH for security reasons. The playbook provides a method to override this default setting, allowing root access over SSH.
+
+```shell
+$ cd /usr/local/share/ansible-container/examples/ansible
+$ ansible-playbook enable_root_ssh_login.yml
+...
+PLAY RECAP ***************************************************************************************************************************************
+alphost                    : ok=6    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
 ```
