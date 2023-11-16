@@ -41,7 +41,7 @@
         keylime_tenant -v 10.88.0.1 -r 10.88.0.1 --cert default -c reglist
       register: podman_run
       changed_when:
-        - "'\"status\": \"Success\"' in (podman_run.stdout_lines | join(' '))"
+        - ('"status": "Success"' in (podman_run.stdout_lines | join(' ')))
 
     - name: Display completion message
       ansible.builtin.debug:
