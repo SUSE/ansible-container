@@ -1,7 +1,7 @@
 ---
 # Ansible Playbook: Setup Keylime on SUSE ALP Dolomite
 # Description: This Ansible playbook automates the deployment and setup of Keylime verifier, registrar and tenant on a SUSE ALP Dolomite host
-# The steps encompass fetching the Keylime image from the specified registry, creating a necessary volume for the Keylime control plane,
+# The steps encompass fetching the Keylime image from the specified registry, creating the necessary volume for the Keylime control plane,
 # launching the Keylime container along with related services, and executing the tenant CLI to interact with Keylime.
 # Documentation reference: [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/keylime-remote-attestation.html#keylime-run-with-podman]
 
