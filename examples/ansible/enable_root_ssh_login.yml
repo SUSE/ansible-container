@@ -1,7 +1,9 @@
 # Ansible Playbook: Enable Root Login via SSH on ALP Dolomite
-# Description: This playbook automates the process of enabling root login via SSH on ALP Dolomite.
-# By default, ALP Dolomite does not permit root login via SSH for security reasons. This playbook
-# provides a method to override this default setting, allowing root access over SSH.
+# Description:This playbook automates the process to enable or disable password root login via SSH on ALP Dolomite for administrative tasks.
+# By default, ALP Dolomite does not permit root login via password for security reasons.
+# This playbook provides a method to override this default setting, allowing password root access over SSH.
+# It's particularly useful to temporarily enable password-based login for tasks like using ssh-copy-id to securely transfer SSH keys.
+# Set 'password_root_ssh' to "enable" to enable password root login or "disable" to disable root password login.
 # Documentation Reference:
 # "2.9.3 Enabling root login via SSH" section in the ALP Dolomite documentation.
 # [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/concept-alp-deployment.html#alp-post-deploy-enable-root-ssh-login]
@@ -11,32 +13,74 @@
   become: true
   vars:
     package_name: openssh-server-config-rootlogin
-    config_file: /etc/sshd/sshd_config.d
+    config_file_path: /etc/ssh/sshd_config.d/root_login_config
+    password_root_ssh: enable
 
   tasks:
-    - name: Install package "{{ package_name }}"
-      ansible.builtin.package:
-        name: "{{ package_name }}"
-        state: present
+    - name: Enable password root ssh
+      when:
+        - password_root_ssh == 'enable'
+      block:
+        - name: Install package "{{ package_name }}"
+          ansible.builtin.package:
+            name: "{{ package_name }}"
+            state: present
+          notify: Reboot
 
-    - name: Ensure sshd_config.d directory exists
-      ansible.builtin.file:
-        path: "{{ config_file }}"
-        state: directory
-        mode: "0755"
+        - name: Reboot right now if necessary
+          ansible.builtin.meta: flush_handlers
 
-    - name: Enable root login in SSH config
-      ansible.builtin.lineinfile:
-        path: "{{ config_file }}/root_login_config"
-        line: "PermitRootLogin yes"
-        create: true
-        mode: "0644"
+        - name: Enable root login in SSH config
+          ansible.builtin.lineinfile:
+            path: "{{ config_file_path }}"
+            line: "PermitRootLogin yes"
+            create: true
+            mode: "0644"
+            owner: root
+            group: root
+          notify: Restart sshd
 
-    - name: Display completion message
-      ansible.builtin.debug:
-        msg: "Root login has been enabled. The system will now reboot to apply the changes."
+        - name: Restart sshd right now if necessary
+          ansible.builtin.meta: flush_handlers
 
+        - name: Display completion message
+          ansible.builtin.debug:
+            msg: "Password root login via SSH has been enabled."
+
+    - name: Disable password root ssh
+      when:
+        - password_root_ssh == 'disable'
+      block:
+        - name: Disable root login in SSH config
+          ansible.builtin.lineinfile:
+            path: "{{ config_file_path }}"
+            line: "PermitRootLogin yes"
+            state: absent
+          notify: Restart sshd
+
+        - name: Restart sshd right now if necessary
+          ansible.builtin.meta: flush_handlers
+
+        - name: Uninstall package "{{ package_name }}"
+          ansible.builtin.package:
+            name: "{{ package_name }}"
+            state: absent
+          notify: Reboot
+
+        - name: Display completion message
+          ansible.builtin.debug:
+            msg: "Password root login via SSH has been disabled."
+
+        - name: Reboot right now if necessary
+          ansible.builtin.meta: flush_handlers
+
+  handlers:
     - name: Reboot
       ansible.builtin.reboot:
         reboot_timeout: 600
         post_reboot_delay: 60
+
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted

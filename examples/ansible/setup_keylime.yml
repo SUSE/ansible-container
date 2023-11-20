@@ -31,17 +31,28 @@
       changed_when:
         - workload_runlabel_run.stdout is regex("^[a-f0-9]{64}$")
 
-    - name: Pause for 5 seconds
-      ansible.builtin.pause:
-        seconds: 5
+    - name: Check Keylime container status
+      containers.podman.podman_container_info:
+        name: keylime-control-plane-container
+      register: container_info
+      until:
+        - container_info.containers[0].State.Running
+      retries: 5
+      delay: 10
 
-    - name: Executing the tenant CLI
+    - name: Executing the tenant CLI with retries
       ansible.builtin.command: >-
-        podman run --rm -v keylime-control-plane-volume:/var/lib/keylime/ keylime-control-plane:latest
+        podman run --rm \
+        -v keylime-control-plane-volume:/var/lib/keylime/ \
+        keylime-control-plane:latest \
         keylime_tenant -v 10.88.0.1 -r 10.88.0.1 --cert default -c reglist
       register: podman_run
+      until:
+        - (podman_run.stdout | regex_search('"status":\\s+"Success"')) is not none
+      retries: 5
+      delay: 10
       changed_when:
-        - ('"status": "Success"' in (podman_run.stdout_lines | join(' ')))
+        - podman_run.rc == 0
 
     - name: Display completion message
       ansible.builtin.debug:
