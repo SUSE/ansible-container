@@ -143,6 +143,7 @@ There are twelve playbooks currently under /usr/local/share/ansible-container/ex
 * setup_kea_dhcpv6_server.yml
 * setup_grafana.yml
 * setup_neuvector.yml
+* setup_keylime.yml
 
 ## VM Creation Playbooks
 * create_alp_vm.yml
@@ -339,3 +340,14 @@ alphost                    : ok=6    changed=4    unreachable=0    failed=0    s
 
 ```
 Upon successful execution of the playbook, access the Grafana interface at http://HOSTNAME_OR_IP_OF_ALP_HOST:3000. When logging in for the first time, use the default credentials admin for both the username and password. Subsequently, set a new password as prompted.
+
+
+## Setup Keylime on ALP Host
+This Ansible playbook automates the deployment and setup of Keylime verifier, registrar and tenant on a SUSE ALP Dolomite host, The steps encompass fetching the Keylime image from the specified registry, creating a necessary volume for the Keylime control plane, launching the Keylime container along with related services, and executing the tenant CLI to interact with Keylime.
+```shell
+$ cd /usr/local/share/ansible-container/examples/ansible
+$ ansible-playbook setup_keylime.yml
+...
+PLAY RECAP ***************************************************************************************************************************************
+alphost                    : ok=7    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
