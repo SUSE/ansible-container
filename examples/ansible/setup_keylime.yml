@@ -6,7 +6,7 @@
 # Documentation reference: [https://documentation.suse.com/alp/dolomite/html/alp-dolomite/keylime-remote-attestation.html#keylime-run-with-podman]
 
 - name: Setup Keylime verifier, registrar and tenant
-  hosts: alptestvm
+  hosts: alphost
   become: true
   vars:
     workload:
